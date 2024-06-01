@@ -1,18 +1,38 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { Avatar_05, Avatar_08, Avatar_09, Avatar_10, Avatar_11, avatar1, avatar27, avatar28 } from '../../../Routes/ImagePath'
-import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 const TicketDetails = () => {
-    const location = useLocation();
-    console.log("Location state:", location.state); // Log location state for debugging
-    const { ticket } = location.state || {};
-    console.log("Ticket data:", ticket); // Log ticket data for debugging
+    const { id } = useParams();
+    const [ticket, setTicket] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const defaultStatus = ticket && ticket.status ? ticket.status : 'Unknown';
-    console.log("Default status:", defaultStatus); // Log default status for debugging
+    useEffect(() => {
+        const fetchTicketDetails = async () => {
+            try {
+                const response = await axios.get(`https://wd79p.com/backend/public/api/tickets/${id}`);
+                setTicket(response.data);
+                setLoading(false);
+            } catch (error) {
+                    setError(error);
+                    setLoading(false);
+                }
+        };
 
-    
+        fetchTicketDetails();
+    }, [id]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error loading ticket details: {error.message}</div>;
+    }
+
+
     return (
         <>
             {/* Page Wrapper */}
@@ -40,7 +60,7 @@ const TicketDetails = () => {
                                             <div className="detail-info">
                                                 <h6>Status</h6>
                                                 <span className="badge badge-soft-warning">
-                                                    {defaultStatus}
+                                                    {ticket.status}
                                                 </span>
                                             </div>
                                         </div>
@@ -52,7 +72,7 @@ const TicketDetails = () => {
                                             </span>
                                             <div className="detail-info info-two">
                                                 <h6>Company</h6>
-                                                <span>{ticket?.companyName || 'Unknown'}</span>
+                                                {ticket.company}
                                             </div>
                                         </div>
                                     </div>
@@ -63,7 +83,9 @@ const TicketDetails = () => {
                                             </span>
                                             <div className="detail-info info-two">
                                                 <h6>Created Date</h6>
-                                                <span>{ticket?.createddate || 'Unknown'}</span>
+                                                <span>
+                                                    {ticket.created_at}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -74,17 +96,18 @@ const TicketDetails = () => {
                                             </span>
                                             <div className="detail-info">
                                                 <h6>Priority</h6>
-                                                <span className="badge badge-soft-danger">{ticket?.priority || 'Unknown'}</span>
+                                                <span>
+                                                    {ticket.priority}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="ticket-purpose">
-                                <h4>{ticket?.ticketsubject || 'Unknown'}</h4>
+                                <h4>{ticket.subject}</h4>
                                 <li>
-                                <h4>{ticket?.description || 'Unknown'}</h4>
-
+                                <h4>{ticket.description}</h4>
                                 </li>
 
                             </div>
