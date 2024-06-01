@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import Select from "react-select";
 import "react-datepicker/dist/react-datepicker.css";
-import axios from "axios";
+// import axios from "axios";
 
 const TicketFilter = () => {
   const [selectedDate1, setSelectedDate1] = useState(null);
@@ -59,46 +59,23 @@ const TicketFilter = () => {
     }),
   };
 
-  const [data, setData] = useState([])
-  const [records, setRecords] = useState([])
-    useEffect(() => {
-      axios.get("https://wd79p.com/backend/public/api/tickets")
-      .then(res=> {
-        setData(res.data)
-        setRecords(res.data);
-      })
-      .catch(err=> console.log(err));
-    }, [])
+  // const [data, setData] = useState([])
+  // const [records, setRecords] = useState([])
+  //   useEffect(() => {
+  //     axios.get("https://wd79p.com/backend/public/api/tickets")
+  //     .then(res=> {
+  //       setData(res.data)
+  //       setRecords(res.data);
+  //     })
+  //     .catch(err=> console.log(err));
+  //   }, [])
 
-  const Filter = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    setRecords(data.filter(f => typeof f.name === 'string' && f.name.toLowerCase().includes(searchTerm)));
-  }
+  // const Filter = (event) => {
+  //   const searchTerm = event.target.value.toLowerCase();
+  //   setRecords(data.filter(f => typeof f.subject === 'string' && f.subject.toLowerCase().includes(searchTerm)));
+  // }
   return (
     <>
-    <div>
-      <dive>
-        <input type="text" className="form-control" onChange={Filter} placeholder="search" />
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Subject</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((d, i) => (
-              <tr key={i}>
-                <td>{d.id}</td>
-                <td>{d.name}</td>
-                <td>{d.subject}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </dive>
-    </div>
       <div className="row filter-row">
         <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
           <div
@@ -114,7 +91,7 @@ const TicketFilter = () => {
               value={inputValue}
               onFocus={handleLabelClick}
               onBlur={handleInputBlur}
-              onChange={Filter}
+              onChange={handleInputChange}
             />
             <label className="focus-label" onClick={handleLabelClick}>
               Employee Name

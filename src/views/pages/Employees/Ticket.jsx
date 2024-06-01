@@ -20,13 +20,12 @@ const Ticket = () => {
   const [companies, setCompanies] = useState([]);
   const [staffs, setStaff] = useState([]);
   useEffect(() => {
-    // Fetch primary data
     const fetchData = async () => {
       const primaryResponse = await axios.get('https://wd79p.com/backend/public/api/tickets');
       setData(primaryResponse.data);
     };
 
-    // Fetch foreign key data (companies)
+    
     const fetchCompanies = async () => {
       const companyResponse = await axios.get('https://wd79p.com/backend/public/api/companies');
       setCompanies(companyResponse.data);
@@ -54,23 +53,21 @@ const Ticket = () => {
   
   const columns = [
     { 
-      title: "Details",
-      dataIndex: "id",
-      render: () => (
-        <Link
-          onClick={() => localStorage.setItem("minheight", "true")}
-          to="/ticket-details"
-        >
-          View
-        </Link>
-      ),
-      sorter: (a, b) => a.id.length - b.id.length,
-    },
-    { 
       title: "Ticket Id",
       dataIndex: "id",
+      render: (text, record) => (
+        <Link
+          onClick={() => localStorage.setItem("minheight", "true")}
+          to={{
+            pathname: `/ticket-details/${record.id}`,
+            state: { ticket: record }
+          }}
+        >
+          {record.id}
+        </Link>
+      ),
      sorter: (a, b) => a.id.length - b.id.length,
-    },
+    },  
     {
       title: 'Company Name',
       dataIndex: 'companyName',
@@ -103,7 +100,7 @@ const Ticket = () => {
     {
       title: "Priority",
       dataIndex: "priority",
-      render: () => (
+      render: (priority) => (
         <div className="dropdown action-label">
           <Link
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
@@ -111,17 +108,23 @@ const Ticket = () => {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <i className="far fa-dot-circle text-danger" /> High{" "}
+          <i className={`far fa-dot-circle ${priority === 'Emergency' ? 'far fa-dot-circle text-danger' 
+          : priority === 'High' ? 'far fa-circle text-danger' 
+          : priority === 'Medium' ? 'far fa-circle text-warning' 
+          : 'far fa-circle text-success'}`} /> {priority}
           </Link>
           <div className="dropdown-menu dropdown-menu-right">
-            <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-danger" /> High
+          <Link className="dropdown-item" to="#">
+              <i className="far fa-dot-circle text-danger" /> Emergency
             </Link>
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-warning" /> Medium
+              <i className="far fa-circle text-danger" /> High
             </Link>
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-success" /> Low
+              <i className="far fa-circle text-warning" /> Medium
+            </Link>
+            <Link className="dropdown-item" to="#">
+              <i className="far fa-circle text-success" /> Low
             </Link>
           </div>
         </div>
@@ -130,35 +133,47 @@ const Ticket = () => {
     },
     {
       title: "Status",
-      dataIndex: "status",
-      render: () => (
-        <div className="dropdown action-label text-center">
-          <Link
-            className="btn btn-white btn-sm btn-rounded dropdown-toggle"
-            to="#"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <i className="far fa-dot-circle text-danger" /> New
-          </Link>
+  dataIndex: "status",
+  render: (status) => (
+    <div className="dropdown action-label text-center">
+      <Link
+        className="btn btn-white btn-sm btn-rounded dropdown-toggle"
+        to="#"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <i className={`far fa-dot-circle ${
+            status === 'New' ? 'far fa-circle text-success' 
+          : status === 'Open' ? 'far fa-dot-circle text-success' 
+          : status === 'Reopened' ? 'far fa-dot-circle text-info' 
+          : status === 'On Hold' ? 'far fa-dot-circle text-warning' 
+          : status === 'Closed' ? 'far fa-dot-circle text-danger' 
+          : status === 'In Progress' ? 'far fa-circle text-info' 
+          : status === 'Cancelled' ? 'far fa-circle text-dangertext-danger' 
+          : ''
+        }`} /> {status}
+      </Link>
           <div className="dropdown-menu dropdown-menu-right">
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-info" /> Open
+              <i className="far fa-circle text-success" /> New
+            </Link>
+            <Link className="dropdown-item" to="#">
+              <i className="far fa-dot-circle text-success" /> Open
             </Link>
             <Link className="dropdown-item" to="#">
               <i className="far fa-dot-circle text-info" /> Reopened
             </Link>
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-danger" /> On Hold
+              <i className="far fa-dot-circle text-warning" /> On Hold
             </Link>
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-success" /> Closed
+              <i className="far fa-dot-circle text-danger" /> Closed
             </Link>
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-success" /> In Progress
+              <i className="far fa-circle text-info" /> In Progress
             </Link>
             <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-danger" /> Cancelled
+              <i className="far fa-circle text-dangertext-danger" /> Cancelled
             </Link>
           </div>
         </div>
@@ -214,7 +229,6 @@ const Ticket = () => {
             modal="#add_ticket"
             name="Add Ticket"
           />
-
           <div className="row">
             <div className="col-md-12">
               <div className="card-group m-b-30">

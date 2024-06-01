@@ -1,8 +1,18 @@
-
+import React from 'react'
 import { Link } from 'react-router-dom'
-import {  Avatar_08, Avatar_10, Avatar_11, avatar1, avatar27, avatar28 } from '../../../Routes/ImagePath'
+import { Avatar_05, Avatar_08, Avatar_09, Avatar_10, Avatar_11, avatar1, avatar27, avatar28 } from '../../../Routes/ImagePath'
+import { useLocation } from 'react-router-dom';
 
 const TicketDetails = () => {
+    const location = useLocation();
+    console.log("Location state:", location.state); // Log location state for debugging
+    const { ticket } = location.state || {};
+    console.log("Ticket data:", ticket); // Log ticket data for debugging
+
+    const defaultStatus = ticket && ticket.status ? ticket.status : 'Unknown';
+    console.log("Default status:", defaultStatus); // Log default status for debugging
+
+    
     return (
         <>
             {/* Page Wrapper */}
@@ -18,7 +28,6 @@ const TicketDetails = () => {
                     </div>
                     {/* /Page Header */}
                     <hr />
-                    
                     <div className="row">
                         <div className="col-xl-8 col-lg-7">
                             <div className="ticket-detail-head">
@@ -31,7 +40,7 @@ const TicketDetails = () => {
                                             <div className="detail-info">
                                                 <h6>Status</h6>
                                                 <span className="badge badge-soft-warning">
-                                                    Status
+                                                    {defaultStatus}
                                                 </span>
                                             </div>
                                         </div>
@@ -42,10 +51,8 @@ const TicketDetails = () => {
                                                 <i className="la la-user" />
                                             </span>
                                             <div className="detail-info info-two">
-                                                <h6>Created By</h6>
-                                                <span> 
-                                                    Created By
-                                                </span>
+                                                <h6>Company</h6>
+                                                <span>{ticket?.companyName || 'Unknown'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -56,9 +63,7 @@ const TicketDetails = () => {
                                             </span>
                                             <div className="detail-info info-two">
                                                 <h6>Created Date</h6>
-                                                <span>
-                                                    Created Date
-                                                </span>
+                                                <span>{ticket?.createddate || 'Unknown'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -69,21 +74,19 @@ const TicketDetails = () => {
                                             </span>
                                             <div className="detail-info">
                                                 <h6>Priority</h6>
-                                                <span className="badge badge-soft-danger">
-                                                    Priority
-                                                </span>
+                                                <span className="badge badge-soft-danger">{ticket?.priority || 'Unknown'}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="ticket-purpose">
-                                <h4>
-                                Ticket Subject
-                                </h4>
-                                <p>
-                                    Description
-                                </p>
+                                <h4>{ticket?.ticketsubject || 'Unknown'}</h4>
+                                <li>
+                                <h4>{ticket?.description || 'Unknown'}</h4>
+
+                                </li>
+
                             </div>
                             <div className="attached-files-info">
                                 <div className="row">
@@ -440,7 +443,87 @@ const TicketDetails = () => {
                                             </div>
                                         </div>
                                     </div>
-
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <div className="input-block mb-3">
+                                                <label className="col-form-label">Assign</label>
+                                                <input type="text" className="form-control" />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="input-block mb-3">
+                                                <label className="col-form-label">Ticket Assignee</label>
+                                                <div className="project-members">
+                                                    <Link title="John Smith" data-bs-toggle="tooltip" to="#">
+                                                        <img
+                                                            src={Avatar_10}
+                                                            alt="img"
+                                                        />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <div className="input-block mb-3">
+                                                <label className="col-form-label">Add Followers</label>
+                                                <input type="text" className="form-control" />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="input-block mb-3">
+                                                <label className="col-form-label">Ticket Followers</label>
+                                                <div className="project-members">
+                                                    <Link
+                                                        title="Richard Miles"
+                                                        data-bs-toggle="tooltip"
+                                                        to="#"
+                                                        className="avatar"
+                                                    >
+                                                        <img
+                                                            src={Avatar_09}
+                                                            alt="img"
+                                                        />
+                                                    </Link>
+                                                    <Link
+                                                        title="John Smith"
+                                                        data-bs-toggle="tooltip"
+                                                        to="#"
+                                                        className="avatar"
+                                                    >
+                                                        <img
+                                                            src={Avatar_10}
+                                                            alt="img"
+                                                        />
+                                                    </Link>
+                                                    <Link
+                                                        title="Mike Litorus"
+                                                        data-bs-toggle="tooltip"
+                                                        to="#"
+                                                        className="avatar"
+                                                    >
+                                                        <img
+                                                            src={Avatar_05}
+                                                            alt="img"
+                                                        />
+                                                    </Link>
+                                                    <Link
+                                                        title="Wilmer Deluna"
+                                                        data-bs-toggle="tooltip"
+                                                        to="#"
+                                                        className="avatar"
+                                                    >
+                                                        <img
+                                                            src={Avatar_11}
+                                                            alt="img"
+                                                        />
+                                                    </Link>
+                                                    <span className="all-team">+2</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="row">
                                         <div className="col-md-12">
                                             <div className="input-block mb-3">

@@ -50,6 +50,9 @@ import Spinner from "../../views/pages/Ui_Interface/Components/Spinner";
 import Tooltips from "../../views/pages/Ui_Interface/Components/Tooltip";
 import ComingSoon from "../../views/pages/Pages/ComingSoon";
 import UnderManitenance from "../../views/pages/Pages/UnderManitenance";
+// import Ticket from "../../views/pages/Employees/Ticket";
+// import TicketDetails from "../../views/pages/Employees/TicketDetails";
+// import routingObjects from "../Appcontainer/index"
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -69,7 +72,7 @@ const AppRouter = () => {
   return (
     <div>
       <Provider store={store}>
-        <BrowserRouter basename="/react/template">
+        <BrowserRouter basename="/">
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Login />} />
@@ -121,6 +124,7 @@ const AppRouter = () => {
             <Route path="/spinner" element={<Spinner />} />
             <Route path="/*" element={<AppContainer />} />
             <Route path="*" element={<Navigate to="/" />} />
+
           </Routes>
         </BrowserRouter>
       </Provider>

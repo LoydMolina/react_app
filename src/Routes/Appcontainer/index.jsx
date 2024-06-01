@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { Outlet, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes, Navigate } from "react-router-dom";
 import Header from "../../views/layout/Header";
 import Sidebar from "../../views/layout/Sidebar";
 import ChatSidebar from "../../components/Mainpages/chatSidebar";
@@ -196,6 +196,7 @@ import RecentFiles from "../../views/pages/MainPages/Apps/FileManager/recentFile
 import EmailContent from "../../views/pages/MainPages/Apps/Email/emailContent.jsx";
 import EmailView from "../../views/pages/MainPages/Apps/Email/emailView.jsx";
 import DealsDetails from "../../views/pages/Crm/DealsDetails.jsx";
+import { components } from "react-select";
 
 const AppContainer = () => {
   useEffect(() => {
@@ -475,6 +476,7 @@ const AppContainer = () => {
       id: 51,
       path: "tickets",
       element: <Ticket />,
+      components: <Ticket/>
     },
     {
       id: 52,
@@ -846,8 +848,9 @@ const AppContainer = () => {
     },
     {
       id: 124,
-      path: "ticket-details",
+      path: "ticket-details/:id",
       element: <TicketDetails />,
+      components: <TicketDetails />,
     },
     {
       id: 125,
@@ -1224,8 +1227,6 @@ const AppContainer = () => {
               <Route key={item.id} path={item.path} element={item.element} />
             ))}
           </Route>
-          
-
           <Route path={"/*"} element={<ChatSidebarLayout />}>
             {ChatRoutingeObjects.map((item) => (
               <Route key={item.id} path={item.path} element={item.element} />

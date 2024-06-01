@@ -122,7 +122,7 @@ const Header = (props) => {
       </Link>
       {/* Header Title */}
       <div className="page-title-box">
-        <h3>Dreams Technologies</h3>
+        <h3>SparkCRM</h3>
       </div>
       {/* /Header Title */}
       <Link
