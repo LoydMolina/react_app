@@ -107,7 +107,7 @@ const TicketDetails = () => {
                             <div className="ticket-purpose">
                                 <h4>{ticket.subject}</h4>
                                 <ul>
-                                <h4>{ticket.description}</h4>
+                                {ticket.description}
                                 </ul>
 
                             </div>
