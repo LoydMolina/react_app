@@ -106,9 +106,9 @@ const TicketDetails = () => {
                             </div>
                             <div className="ticket-purpose">
                                 <h4>{ticket.subject}</h4>
-                                <li>
+                                <ul>
                                 <h4>{ticket.description}</h4>
-                                </li>
+                                </ul>
 
                             </div>
                             <div className="attached-files-info">
