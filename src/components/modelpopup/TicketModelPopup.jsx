@@ -59,10 +59,20 @@ const TicketModelPopup = () => {
                   </div>
                   <div className="col-sm-6">
                     <div className="input-block mb-3">
+                      <label className="col-form-label">Client</label>
+                      <Select
+                        options={company}
+                        placeholder="-"
+                        styles={customStyles}
+                      />
+                    </div>
+                  </div>
+                  {/* <div className="col-sm-6">
+                    <div className="input-block mb-3">
                       <label className="col-form-label">Company Id</label>
                       <input className="form-control" type="text" />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="row">
                   <div className="col-sm-6">
@@ -77,12 +87,8 @@ const TicketModelPopup = () => {
                   </div>
                   <div className="col-sm-6">
                     <div className="input-block mb-3">
-                      <label className="col-form-label">Client</label>
-                      <Select
-                        options={company}
-                        placeholder="-"
-                        styles={customStyles}
-                      />
+                      <label className="col-form-label">CC</label>
+                      <input className="form-control" type="text" />
                     </div>
                   </div>
                 </div>
@@ -96,26 +102,20 @@ const TicketModelPopup = () => {
                         styles={customStyles}
                       />
                     </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">CC</label>
-                      <input className="form-control" type="text" />
-                    </div>
-                  </div>
-                </div>
-                <div className="col-sm-6">
+                    <div className="col-sm-6">
                     <div className="input-block mb-3">
                       <label className="col-form-label">Email Address</label>
                       <input className="form-control" type="text" />
                     </div>
+                </div> 
                   </div>
+                </div>
                 <div className="row">
                   <div className="col-sm-12">
                     <div className="input-block mb-3">
                       <label className="col-form-label">Description</label>
                       <textarea className="form-control" defaultValue={""} />
-                    </div>
+                  </div>
                     <div className="input-block mb-3">
                       <label className="col-form-label">Upload Files</label>
                       <input className="form-control" type="file" />

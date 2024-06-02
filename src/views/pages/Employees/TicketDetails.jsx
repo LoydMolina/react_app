@@ -6,6 +6,7 @@ import axios from 'axios';
 const TicketDetails = () => {
     const { id } = useParams();
     const [ticket, setTicket] = useState(null);
+    const [companyName, setCompanyName] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -13,8 +14,15 @@ const TicketDetails = () => {
         const fetchTicketDetails = async () => {
             try {
                 const response = await axios.get(`https://wd79p.com/backend/public/api/tickets/${id}`);
-                setTicket(response.data);
+                const ticketData = response.data;
+                setTicket(ticketData);
+
+                if (ticketData && ticketData.company_id) {
+                    const companyResponse = await axios.get(`https://wd79p.com/backend/public/api/companies/${ticketData.company_id}`);
+                    setCompanyName(companyResponse.data.name);
+                }
                 setLoading(false);
+
             } catch (error) {
                     setError(error);
                     setLoading(false);
@@ -72,7 +80,7 @@ const TicketDetails = () => {
                                             </span>
                                             <div className="detail-info info-two">
                                                 <h6>Company</h6>
-                                                {ticket.company}
+                                                {companyName}
                                             </div>
                                         </div>
                                     </div>
