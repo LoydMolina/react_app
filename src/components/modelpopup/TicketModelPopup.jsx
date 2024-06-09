@@ -1,253 +1,184 @@
-import React from "react";
-import Select from "react-select";
+import React, { useState, useEffect } from 'react';
+import { createTicket, updateTicket } from '../../apiService';
 
-const TicketModelPopup = () => {
-  const company = [
-    { value: 1, label: "-" },
-    { value: 2, label: "Delta Infotech" },
-    { value: 3, label: "International Software Inc" },
-  ];
+const TicketModelPopup = ({ ticket, onSave }) => {
+  const [formData, setFormData] = useState({
+    id: '',
+    subject: '',
+    company_id:'',
+    assign_staff: '',
+    priority: '',
+    cc: '',
+    description: '',
+    file: '',
+    user_id: '',
+    to_email: '',
+    message_id: '',
+    created_at: '',
+    updated_at: '',
+    status: 'Active'
+  });
 
-  const staff = [
-    { value: 1, label: "-" },
-    { value: 2, label: "John Smith" },
-    { value: 3, label: "Mike Litorus" },
-  ];
-  const status = [
-    { value: 1, label: "High" },
-    { value: 2, label: "Low" },
-    { value: 3, label: "Medium" },
-  ];
-  const customStyles = {
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused ? "#ff9b44" : "#fff",
-      color: state.isFocused ? "#fff" : "#000",
-      "&:hover": {
-        backgroundColor: "#ff9b44",
-      },
-    }),
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (ticket) {
+      setFormData(ticket);
+    } else {
+      setFormData({
+        id: '',
+        subject: '',
+        company_id:'',
+        assign_staff: '',
+        priority: '',
+        cc: '',
+        description: '',
+        file: '',
+        user_id: '',
+        to_email: '',
+        message_id: '',
+        created_at: '',
+        updated_at: '',
+        status: 'Active'
+      });
+    }
+  }, [ticket]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.subject) newErrors.subject = 'Subject is required';
+    if (!formData.to_email) {
+      newErrors.to_email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.to_email)) {
+      newErrors.to_email = 'Email is invalid';
+    }
+    // if (!formData.phone_number) newErrors.phone_number = 'Phone number is required';
+    // if (!formData.website) {
+    //   newErrors.website = 'Website is required';
+    // } 
+    
+    // else if (!/^https?:\/\/[^\s$.?#].[^\s]*$/.test(formData.website)) {
+    //   newErrors.website = 'Website must be a valid URL';
+    // }
+    // if (!formData.status) newErrors.status = 'Status is required';
+    // return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    try {
+      if (formData.id) {
+        await updateTicket(formData.id, formData);
+      } else {
+        await createTicket(formData);
+      }
+      onSave();
+      // Reset form fields
+      setFormData({
+        id: '',
+        subject: '',
+        company_id:'',
+        assign_staff: '',
+        priority: '',
+        cc: '',
+        description: '',
+        file: '',
+        user_id: '',
+        to_email: '',
+        message_id: '',
+        created_at: '',
+        updated_at: '',
+        status: 'Active'
+      });
+      // Close modal after save
+      const closeModalButton = document.querySelector('#add_ticket .btn-close');
+      if (closeModalButton) {
+        closeModalButton.click();
+      }
+    } catch (error) {
+      console.error('Error saving ticket:', error.response ? error.response.data : error.message);
+      if (error.response && error.response.data && error.response.data.errors) {
+        setErrors({ submit: error.response.data.errors });
+      } else {
+        setErrors({ submit: { general: 'An error occurred. Please try again later.' } });
+      }
+    }
   };
 
   return (
-    <>
-      <div id="add_ticket" className="modal custom-modal fade" role="dialog">
-        <div
-          className="modal-dialog modal-dialog-centered modal-lg"
-          role="document"
-        >
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Add Ticket</h5>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <form>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Ticket Subject</label>
-                      <input className="form-control" type="text" />
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Client</label>
-                      <Select
-                        options={company}
-                        placeholder="-"
-                        styles={customStyles}
-                      />
-                    </div>
-                  </div>
-                  {/* <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Company Id</label>
-                      <input className="form-control" type="text" />
-                    </div>
-                  </div> */}
-                </div>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Assign Staff</label>
-                      <Select
-                        options={staff}
-                        placeholder="-"
-                        styles={customStyles}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">CC</label>
-                      <input className="form-control" type="text" />
-                    </div>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Priority</label>
-                      <Select
-                        options={status}
-                        placeholder="High"
-                        styles={customStyles}
-                      />
-                    </div>
-                    <div className="col-sm-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Email Address</label>
-                      <input className="form-control" type="text" />
-                    </div>
-                </div> 
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-sm-12">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Description</label>
-                      <textarea className="form-control" defaultValue={""} />
-                  </div>
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Upload Files</label>
-                      <input className="form-control" type="file" />
-                    </div>
-                  </div>
-                </div>
-                <div className="submit-section">
-                  <button
-                    className="btn btn-primary submit-btn"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    type="reset"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </form>
-            </div>
+    <div className="modal fade" id="add_ticket" tabIndex="-1" role="dialog" aria-labelledby="add_ticket" aria-hidden="true">
+      <div className="modal-dialog" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">{formData.id ? 'Edit Ticket' : 'Add Ticket'}</h5>
+            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div className="modal-body">
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Ticket Subject</label>
+                <input type="text" className={`form-control ${errors.subject ? 'is-invalid' : ''}`} name="subject" value={formData.subject} onChange={handleChange} />
+                {errors.name && <div className="text-danger">{errors.subject}</div>}
+              </div>
+              <div className="form-group">
+                <label>Client</label>
+                <input type="text" className={`form-control ${errors.company_id ? 'is-invalid' : ''}`} name="company_id" value={formData.company_id} onChange={handleChange} />
+                {errors.email && <div className="text-danger">{errors.company_id}</div>}
+              </div>
+              <div className="form-group">
+                <label>Assign Staff</label>
+                <input type="text" className={`form-control ${errors.assign_staff ? 'is-invalid' : ''}`} name="assign_staff" value={formData.assign_staff} onChange={handleChange} />
+                {errors.phone_number && <div className="text-danger">{errors.assign_staff}</div>}
+              </div>
+              <div className="form-group">
+                <label>Cc</label>
+                <input type="text" className={`form-control ${errors.cc ? 'is-invalid' : ''}`} name="cc" value={formData.cc} onChange={handleChange} />
+                {errors.website && <div className="text-danger">{errors.cc}</div>}
+              </div>
+              <div className="form-group">
+                <label>Priority</label>
+                <input type="text" className={`form-control ${errors.priority ? 'is-invalid' : ''}`} name="priority" value={formData.priority} onChange={handleChange} />
+                {errors.website && <div className="text-danger">{errors.priority}</div>}
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input type="email" className={`form-control ${errors.to_email ? 'is-invalid' : ''}`} name="to_email" value={formData.to_email} onChange={handleChange} />
+                {errors.email && <div className="text-danger">{errors.to_email}</div>}
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <input type="text" className="form-control" name="description" value={formData.description} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Created at</label>
+                <input type="text" className="form-control" name="created_at" value={formData.created_at} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Updated at</label>
+                <input type="text" className="form-control" name="updated_at" value={formData.updated_at} onChange={handleChange} />
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" className="btn btn-primary">Save changes</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-
-      <div id="edit_ticket" className="modal custom-modal fade" role="dialog">
-        <div
-          className="modal-dialog modal-dialog-centered modal-lg"
-          role="document"
-        >
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Edit Ticket</h5>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <form>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Ticket Subject</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        defaultValue="Laptop Issue"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Company Id</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        readOnly
-                        defaultValue="TKT-0001"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Assign Staff</label>
-                      <Select
-                        options={staff}
-                        placeholder="John Smith"
-                        styles={customStyles}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Client</label>
-                      <Select
-                        options={company}
-                        placeholder="Delta InfoTech"
-                        styles={customStyles}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Priority</label>
-                      <Select
-                        options={status}
-                        placeholder="Medium"
-                        styles={customStyles}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">CC</label>
-                      <input className="form-control" type="text" />
-                    </div>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-12">
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Description</label>
-                      <textarea
-                        className="form-control"
-                        rows={4}
-                        defaultValue={""}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="submit-section">
-                  <button
-                    className="btn btn-primary submit-btn"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    type="reset"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };
 

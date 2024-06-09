@@ -46,7 +46,7 @@ const Ticket = () => {
     return {
       ...item,
       companyName: company ? company.name : '--',
-      staffName: staff ? staff.name : '--',
+      staffname: staff ? `${staff.first_name} ${staff.last_name}` : '--'
     };
     
   });
@@ -82,9 +82,9 @@ const Ticket = () => {
     },
     {
       title: "Assigned Staff",
-      dataIndex: "staffName",
-      key: "staffName",
-      sorter: (a, b) => a.staffName.length - b.staffName.length,
+      dataIndex: "staffname",
+      key: "staffname",
+      sorter: (a, b) => a.staffname.length - b.staffname.length,
     },
     {
       title: "Created Date",
