@@ -7,10 +7,14 @@ import TicketModelPopup from "../../../components/modelpopup/TicketModelPopup";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import TicketFilter from "../../../components/TicketFilter";
 
+const onSave = () => {
+  console.log('Ticket saved successfully!');
+  // Add any other logic you want to perform after saving the ticket
+};
 
 const Ticket = () => {
   const [users, setUsers] = useState([]);
-
+  
   useEffect(() => {
     axios.get("/api/ticket.json")
     .then((res) => setUsers(res.data));
@@ -286,7 +290,7 @@ const Ticket = () => {
           </div>
         </div>
       </div>
-      <TicketModelPopup />
+      <TicketModelPopup onSave={onSave}/>
       <DeleteModal Name="Delete Ticket" />
     </>
   );

@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import DatePicker from "react-datepicker";
 import Select from "react-select";
 import "react-datepicker/dist/react-datepicker.css";
 // import axios from "axios";
 
 const TicketFilter = () => {
-  const [selectedDate1, setSelectedDate1] = useState(null);
-  const [selectedDate2, setSelectedDate2] = useState(null);
 
   const [focused, setFocused] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [inputValue2, setInputValue2] = useState("");
 
   const handleLabelClick = () => {
     setFocused(true);
@@ -28,18 +26,20 @@ const TicketFilter = () => {
       setFocused(true);
     }
   };
+  const handleInputChange2 = (e) => {
+    const value = e.target.value;
+    setInputValue2(value);
+    if (value !== "" && !focused) {
+      setFocused(true);
+    }
+  };
 
-  const handleDateChange1 = (date) => {
-    setSelectedDate1(date);
-  };
-  const handleDateChange2 = (date) => {
-    setSelectedDate2(date);
-  };
   const level = [
     { value: 1, label: "Select Level" },
-    { value: 2, label: "High" },
-    { value: 3, label: "Low" },
-    { value: 4, label: "Medium" },
+    { value: 2, label: "Emergency" },
+    { value: 3, label: "High" },
+    { value: 4, label: "Low" },
+    { value: 5, label: "Medium" },
   ];
   const status = [
     { value: 1, label: "Select Level" },
@@ -59,21 +59,6 @@ const TicketFilter = () => {
     }),
   };
 
-  // const [data, setData] = useState([])
-  // const [records, setRecords] = useState([])
-  //   useEffect(() => {
-  //     axios.get("https://wd79p.com/backend/public/api/tickets")
-  //     .then(res=> {
-  //       setData(res.data)
-  //       setRecords(res.data);
-  //     })
-  //     .catch(err=> console.log(err));
-  //   }, [])
-
-  // const Filter = (event) => {
-  //   const searchTerm = event.target.value.toLowerCase();
-  //   setRecords(data.filter(f => typeof f.subject === 'string' && f.subject.toLowerCase().includes(searchTerm)));
-  // }
   return (
     <>
       <div className="row filter-row">
@@ -94,7 +79,28 @@ const TicketFilter = () => {
               onChange={handleInputChange}
             />
             <label className="focus-label" onClick={handleLabelClick}>
-              Employee Name
+              Ticket Id
+            </label>
+          </div>
+        </div>
+        <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+          <div
+            className={
+              focused || inputValue2 !== ""
+                ? "input-block form-focus focused"
+                : "input-block form-focus"
+            }
+          >
+            <input
+              type="text"
+              className="form-control floating"
+              value={inputValue2}
+              onFocus={handleLabelClick}
+              onBlur={handleInputBlur}
+              onChange={handleInputChange2}
+            />
+            <label className="focus-label" onClick={handleLabelClick}>
+              Ticket Subject
             </label>
           </div>
         </div>
@@ -116,34 +122,6 @@ const TicketFilter = () => {
               styles={customStyles}
             />
             <label className="focus-label">Priority</label>
-          </div>
-        </div>
-        <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-          <div className="input-block form-focus select-focus">
-            <div className="cal-icon">
-              <DatePicker
-                selected={selectedDate1}
-                onChange={handleDateChange1}
-                className="form-control floating datetimepicker"
-                type="date"
-                dateFormat="dd-MM-yyyy"
-              />
-            </div>
-            <label className="focus-label">From</label>
-          </div>
-        </div>
-        <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-          <div className="input-block form-focus select-focus">
-            <div className="cal-icon">
-              <DatePicker
-                selected={selectedDate2}
-                onChange={handleDateChange2}
-                className="form-control floating datetimepicker"
-                type="date"
-                dateFormat="dd-MM-yyyy" // Add the placeholderText prop here
-              />
-            </div>
-            <label className="focus-label">To</label>
           </div>
         </div>
         <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">

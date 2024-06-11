@@ -53,6 +53,16 @@ export const deleteCompany = async (id) => {
   }
 };
 
+export const getTicket = async () => {
+    try {
+      const response = await axios.get(TICKET_API);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching ticket:', error);
+      throw error;
+    }
+  };
+
 export const createTicket = async (ticketData) => {
     try {
       const response = await axios.post(TICKET_API, ticketData);

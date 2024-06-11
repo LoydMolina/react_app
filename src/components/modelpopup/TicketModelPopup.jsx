@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createTicket, updateTicket } from '../../apiService';
 
+
+
 const TicketModelPopup = ({ ticket, onSave }) => {
   const [formData, setFormData] = useState({
     id: '',
@@ -69,7 +71,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     //   newErrors.website = 'Website must be a valid URL';
     // }
     // if (!formData.status) newErrors.status = 'Status is required';
-    // return newErrors;
+    return newErrors;
   };
 
   const handleSubmit = async (e) => {
@@ -150,8 +152,12 @@ const TicketModelPopup = ({ ticket, onSave }) => {
               </div>
               <div className="form-group">
                 <label>Priority</label>
-                <input type="text" className={`form-control ${errors.priority ? 'is-invalid' : ''}`} name="priority" value={formData.priority} onChange={handleChange} />
-                {errors.website && <div className="text-danger">{errors.priority}</div>}
+                <select className={`form-control ${errors.status ? 'is-invalid' : ''}`} name="priority" value={formData.priority} onChange={handleChange}>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                {errors.status && <div className="text-danger">{errors.status}</div>}
               </div>
               <div className="form-group">
                 <label>Email</label>
@@ -162,17 +168,18 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                 <label>Description</label>
                 <input type="text" className="form-control" name="description" value={formData.description} onChange={handleChange} />
               </div>
-              <div className="form-group">
-                <label>Created at</label>
-                <input type="text" className="form-control" name="created_at" value={formData.created_at} onChange={handleChange} />
-              </div>
-              <div className="form-group">
-                <label>Updated at</label>
-                <input type="text" className="form-control" name="updated_at" value={formData.updated_at} onChange={handleChange} />
-              </div>
+              {errors.submit && (
+                <div className="text-danger">
+                  {Object.entries(errors.submit).map(([field, messages]) => (
+                    <div key={field}>
+                      {field}: {Array.isArray(messages) ? messages.join(', ') : messages}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" className="btn btn-primary">Save changes</button>
+                <button type="submit" className="btn btn-primary">Save</button>
               </div>
             </form>
           </div>
