@@ -1,7 +1,7 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-const DeleteModal = (props) => {
+const DeleteModal = ({ Name, deleteAction }) => {
   return (
     <>
       {/* Delete Performance Indicator Modal */}
@@ -10,13 +10,18 @@ const DeleteModal = (props) => {
           <div className="modal-content">
             <div className="modal-body">
               <div className="form-header">
-                <h3>{props.Name}</h3>
-                <p>Are you sure want to delete?</p>
+                <h3>{Name}</h3>
+                <p>Are you sure you want to delete?</p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <Link to="#" className="btn btn-primary continue-btn">
+                    <Link
+                      to="#"
+                      className="btn btn-primary continue-btn"
+                      onClick={deleteAction}
+                      data-bs-dismiss="modal"
+                    >
                       Delete
                     </Link>
                   </div>

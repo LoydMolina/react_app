@@ -197,6 +197,7 @@ import EmailContent from "../../views/pages/MainPages/Apps/Email/emailContent.js
 import EmailView from "../../views/pages/MainPages/Apps/Email/emailView.jsx";
 import DealsDetails from "../../views/pages/Crm/DealsDetails.jsx";
 import { components } from "react-select";
+import UsersDetails from "../../../src/views/pages/Administration/Users/UsersDetails.jsx";
 
 const AppContainer = () => {
   useEffect(() => {
@@ -306,11 +307,11 @@ const AppContainer = () => {
       path: "form-input-groups",
       element: <InputGroups />,
     },
-    // {
-    //   id: 20,
-    //   path: "profile",
-    //   element: <EmployeeProfile />,
-    // },
+    {
+      id: 20,
+      path: "users-details/:id",
+      element: <UsersDetails />,
+    },
     {
       id: 21,
       path: "events",

@@ -7,6 +7,7 @@ import TicketModelPopup from "../../../components/modelpopup/TicketModelPopup";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import TicketFilter from "../../../components/TicketFilter";
 
+
 const onSave = () => {
   console.log('Ticket saved successfully!');
   // Add any other logic you want to perform after saving the ticket
@@ -14,6 +15,7 @@ const onSave = () => {
 
 const Ticket = () => {
   const [users, setUsers] = useState([]);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
   
   useEffect(() => {
     axios.get("/api/ticket.json")
@@ -29,7 +31,6 @@ const Ticket = () => {
       setData(primaryResponse.data);
     };
 
-    
     const fetchCompanies = async () => {
       const companyResponse = await axios.get('https://wd79p.com/backend/public/api/companies');
       setCompanies(companyResponse.data);
@@ -54,6 +55,15 @@ const Ticket = () => {
     };
     
   });
+
+  const deleteTicket = async (ticketId) => {
+    try {
+      await axios.delete(`https://wd79p.com/backend/public/api/tickets/${ticketId}`);
+      setData(data.filter(ticket => ticket.id !== ticketId));
+    } catch (error) {
+      console.error("There was an error deleting the ticket!", error);
+    }
+  };
   
   const columns = [
     { 
@@ -186,7 +196,7 @@ const Ticket = () => {
     },
     {
       title: "Action",
-      render: () => (
+      render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <Link
             to="#"
@@ -210,6 +220,7 @@ const Ticket = () => {
               to="#"
               data-bs-toggle="modal"
               data-bs-target="#delete"
+              onClick={() => setTicketToDelete(record)}
             >
               <i className="fa fa-trash m-r-5" /> Delete
             </Link>
@@ -291,7 +302,15 @@ const Ticket = () => {
         </div>
       </div>
       <TicketModelPopup onSave={onSave}/>
-      <DeleteModal Name="Delete Ticket" />
+      <DeleteModal
+        Name={ticketToDelete ? `Ticket #${ticketToDelete.id}` : 'Delete Ticket'}
+        deleteAction={() => {
+          if (ticketToDelete) {
+            deleteTicket(ticketToDelete.id);
+            setTicketToDelete(null);
+          }
+        }}
+      />
     </>
   );
 };
