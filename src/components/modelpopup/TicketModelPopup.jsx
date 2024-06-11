@@ -5,47 +5,37 @@ import axios from 'axios';
 
 
 const TicketModelPopup = ({ ticket, onSave }) => {
-  const [data, setdata] = useState({ assign_staff: '' });
-  const [staffOptions, setStaffOptions] = useState([]);
-  const [companyData, setCompanyData] = useState({ assign_company: '' });
-  const [companyOptions, setCompanyOptions] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [companies, setCompanies] = useState([]);
+  const [users, setUsers] = useState([]);
+
 
   useEffect(() => {
-    // Fetch data from the API
-    axios.get('https://wd79p.com/backend/public/api/companies')
-      .then(response => {
-        setCompanyOptions(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching company options:', error);
-      });
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('https://wd79p.com/backend/public/api/users');
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const handleCompany = (e) => {
-    const { name, value } = e.target;
-    setCompanyData({
-      ...companyData,
-      [name]: value
-    });
-  };
 
   useEffect(() => {
-    axios.get('https://wd79p.com/backend/public/api/users')
-      .then(response => {
-        setStaffOptions(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching staff options:', error);
-      });
-  }, []);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('https://wd79p.com/backend/public/api/companies');
+        setCompanies(response.data);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
 
-  const handle = (e) => {
-    const { name, value } = e.target;
-    setdata({
-      ...data,
-      [name]: value
-    });
-  };
+    fetchData();
+  }, []);
 
   const [formData, setFormData] = useState({
     id: '',
@@ -64,7 +54,6 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     status: 'Active'
   });
 
-  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (ticket) {
@@ -179,38 +168,42 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                 {errors.name && <div className="text-danger">{errors.subject}</div>}
               </div>
               <div className="form-group">
-              <label>Client</label>
-              <select 
-              className={`form-control ${errors.assign_company ? 'is-invalid' : ''}`} 
-              name="assign_company" 
-              value={formData.assign_company} 
-              onChange={handleCompany}
-              >
-              <option value="">--Select Client--</option>
-              {companyOptions.map(company => (
-              <option key={company.id} value={company.id}>{company.name}</option>
-              ))}
-              </select>
-              {errors.assign_company && <div className="text-danger">{errors.assign_company}</div>}
+                <label>Client</label>
+                <select
+                  className={`form-control ${errors.company_id ? 'is-invalid' : ''}`}
+                  name="company_id"
+                  value={formData.company_id}
+                  onChange={handleChange}
+                >
+                  <option value="">--Select Client--</option>
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.company_id && <div className="text-danger">{errors.company_id}</div>}
               </div>
               <div className="form-group">
-              <label>Assign Staff</label>
-      <select 
-        className={`form-control ${errors.assign_staff ? 'is-invalid' : ''}`} 
-        name="assign_staff" 
-        value={formData.assign_staff} 
-        onChange={handleChange}
-      >
-        <option value="">--Select Staff--</option>
-        {staffOptions.map(staff => (
-          <option key={staff.id} value={staff.id}>{staff.first_name} {staff.last_name}</option>
-        ))}
-      </select>
-      {errors.assign_staff && <div className="text-danger">{errors.assign_staff}</div>}
+                <label>Assign Staff</label>
+                <select
+                  className={`form-control ${errors.assign_staff ? 'is-invalid' : ''}`}
+                  name="assign_staff"
+                  value={formData.assign_staff}
+                  onChange={handleChange}
+                >
+                  <option value="">--Select Staff--</option>
+                  {users.map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.first_name} {user.last_name}
+                    </option>
+                  ))}
+                </select>
+                {errors.assign_staff && <div className="text-danger">{errors.assign_staff}</div>}
               </div>
               <div className="form-group">
                 <label>Cc</label>
-                <input type="text" className={`form-control ${errors.cc ? 'is-invalid' : ''}`} name="cc" value={formData.cc} onChange={handle} />
+                <input type="text" className={`form-control ${errors.cc ? 'is-invalid' : ''}`} name="cc" value={formData.cc} onChange={handleChange} />
                 {errors.website && <div className="text-danger">{errors.cc}</div>}
               </div>
               <div className="form-group">
