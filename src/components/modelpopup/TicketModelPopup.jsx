@@ -8,6 +8,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
   const [errors, setErrors] = useState({});
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {
@@ -149,6 +150,8 @@ const TicketModelPopup = ({ ticket, onSave }) => {
       } else {
         setErrors({ submit: { general: 'An error occurred. Please try again later.' } });
       }
+    } finally {
+      setLoading(false); // Set loading to false after the request is done
     }
   };
 
@@ -235,7 +238,9 @@ const TicketModelPopup = ({ ticket, onSave }) => {
               )}
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" className="btn btn-primary">Save</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? 'Saving...' : 'Save'}
+                </button>
               </div>
             </form>
           </div>

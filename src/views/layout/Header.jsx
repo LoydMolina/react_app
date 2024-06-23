@@ -388,7 +388,7 @@ const Header = (props) => {
             Settings
           </Link>
           <Link className="dropdown-item" to="/login">
-            Logout
+            Logout  
           </Link>
         </div>
       </div>

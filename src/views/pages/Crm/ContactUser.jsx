@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Mail, MessageCircle, Edit, MoreVertical } from 'react-feather';
+import { Mail, Edit, MoreVertical } from 'react-feather';
 
 const ContactUser = ({ company }) => (
     <div className="col-md-12">
@@ -42,9 +42,7 @@ const ContactUser = ({ company }) => (
             </div>
             <div className="contacts-action">
                 <Link to="#" className="btn-icon text-warning"><i className="fa-solid fa-star" /></Link>
-                <Link to="#" data-bs-toggle="modal" data-bs-target="#add_deals" className="btn btn-pink"><PlusCircle className='me-1' size={15} />Add Deal</Link>
                 <Link to="#" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_compose"><Mail className='me-1' size={15} />Send Email</Link>
-                <Link to="/chat" className="btn-icon"><MessageCircle size={15} /></Link>
                 <Link to="#" className="btn-icon" data-bs-toggle="modal" data-bs-target="#edit_company"><Edit size={15} /></Link>
                 <div className="dropdown">
                     <Link to="#" className="dropdown-toggle marg-tp" data-bs-toggle="dropdown" aria-expanded="false"><MoreVertical size={15} /></Link>

@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Select from 'react-select';
-import { Calendar, Edit, Mail, MessageCircle, MoreVertical, Phone, PlusCircle, Star, Trash2 } from 'react-feather';
 import CompaniesDetailModal from '../../../components/modelpopup/CompaniesDetailModal';
 import CompanyEditModal from '../../../components/modelpopup/Crm/CompanyEditModal';
 import ContactUser from './ContactUser';

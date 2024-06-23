@@ -1,18 +1,23 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import axios from "axios";
 import { Applogo } from "../../../Routes/ImagePath";
 import { emailrgx } from "../Authentication/RegEx";
 
 const schema = yup.object({
+  username: yup
+    .string()
+    .required("Username is required")
+    .trim(),
   email: yup
     .string()
-    .matches(emailrgx, "Email is required")
+    .matches(emailrgx, "Invalid email address")
     .required("Email is required")
     .trim(),
   password: yup
@@ -21,11 +26,18 @@ const schema = yup.object({
     .max(20, "Password must be at most 20 characters")
     .required("Password is required")
     .trim(),
+  repeatPassword: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "Passwords must match")
+    .required("Repeat password is required")
+    .trim(),
 });
+
 const Register = (props) => {
-  const [passwordEye, setPasswordEye] = useState(true); // State for password field
-  const [checkUser, setCheckUser] = useState(false); // State for password field
-  const [repeatPasswordEye, setRepeatPasswordEye] = useState(true); // State for repeat password field
+  const [passwordEye, setPasswordEye] = useState(true);
+  const [repeatPasswordEye, setRepeatPasswordEye] = useState(true);
+  const [checkUser, setCheckUser] = useState(false);
+  const [registrationError, setRegistrationError] = useState("");
 
   const {
     control,
@@ -34,26 +46,26 @@ const Register = (props) => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
   const navigate = useNavigate();
-  const details = localStorage.getItem("loginDetails");
-  const loginInfo = JSON.parse(details) || []; // Initialize as an empty array if null
 
-  const [loginState, setLoginState] = useState(loginInfo);
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios.post("http://localhost:5000/register", {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      });
 
-  const onSubmit = (data) => {
-    const currentUser = loginInfo?.find((item) => item?.email === data?.email);
-    if (currentUser === undefined) {
-      const credencial = { email: data.email, password: data.password };
-      localStorage.setItem(
-        "loginDetails",
-        JSON.stringify([...loginInfo, credencial])
-      );
-      setLoginState([...loginInfo, credencial]);
-      setCheckUser(true); // Set checkUser to true for a successful login
-      navigate("/");
-    } else {
-      setCheckUser(false); // Set checkUser to false for a failed login
-      return false;
+      if (response.status === 201) {
+        navigate("/");
+      }
+    } catch (error) {
+      if (error.response && error.response.data) {
+        setRegistrationError(error.response.data.message);
+      } else {
+        setRegistrationError("Registration failed. Please try again.");
+      }
     }
   };
 
@@ -74,131 +86,107 @@ const Register = (props) => {
                 <h3 className="account-title">Register</h3>
                 <p className="account-subtitle">Access to our dashboard</p>
                 {/* Account Form */}
-                <div>
-                  <form>
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Email</label>
-                      <Controller
-                        name="email"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Username</label>
+                    <Controller
+                      name="username"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <input
+                          className={`form-control ${errors?.username ? "error-input" : ""}`}
+                          type="text"
+                          value={value}
+                          onChange={onChange}
+                          autoComplete="off"
+                        />
+                      )}
+                    />
+                    <span className="text-danger">{errors?.username?.message}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Email</label>
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <input
+                          className={`form-control ${errors?.email ? "error-input" : ""}`}
+                          type="text"
+                          value={value}
+                          onChange={onChange}
+                          autoComplete="off"
+                        />
+                      )}
+                    />
+                    <span className="text-danger">{errors?.email?.message}</span>
+                    <span className="text-danger">{checkUser ? "This email already exists" : ""}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Password</label>
+                    <Controller
+                      name="password"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <div className="pass-group" style={{ position: "relative" }}>
                           <input
-                            className={`form-control ${
-                              errors?.email ? "error-input" : ""
-                            }`}
-                            type="text"
+                            type={passwordEye ? "password" : "text"}
+                            className={`form-control ${errors?.password ? "error-input" : ""}`}
                             value={value}
                             onChange={onChange}
-                            autoComplete="false"
+                            autoComplete="off"
                           />
-                        )}
-                      />
-
-                      <span className="text-danger">
-                        {errors?.email?.message}
-                      </span>
-                      <span className="text-danger">
-                        {checkUser ? "This Email is Already exist" : ""}
-                      </span>
-                    </div>
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Password</label>
-                      <Controller
-                        name="password"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <div
-                            className="pass-group"
-                            style={{ position: "relative" }}
-                          >
-                            <input
-                              type={passwordEye ? "password" : "text"}
-                              className={`form-control  ${
-                                errors?.password ? "error-input" : ""
-                              }`}
-                              value={value}
-                              onChange={onChange}
-                              autoComplete="false"
-                            />
-                            <span
-                              style={{
-                                position: "absolute",
-                                right: "5%",
-                                top: "30%",
-                              }}
-                              onClick={() => setPasswordEye(!passwordEye)}
-                              className={`fa toggle-password ${
-                                passwordEye ? "fa-eye-slash" : "fa-eye"
-                              }`}
-                            />
-                          </div>
-                        )}
-                        defaultValue=""
-                      />
-
-                      <span className="text-danger">
-                        {errors?.password?.message}
-                      </span>
-                    </div>
-                    <div className="input-block mb-3">
-                      <label className="col-form-label">Repeat Password</label>
-                      <Controller
-                        name="repeatepassword"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <div
-                            className="pass-group"
-                            style={{ position: "relative" }}
-                          >
-                            <input
-                              type={repeatPasswordEye ? "password" : "text"}
-                              className={`form-control  ${
-                                errors?.repeatPassword ? "error-input" : ""
-                              }`}
-                              value={value}
-                              onChange={onChange}
-                              autoComplete="false"
-                            />
-                            <span
-                              style={{
-                                position: "absolute",
-                                right: "5%",
-                                top: "30%",
-                              }}
-                              onClick={() =>
-                                setRepeatPasswordEye(!repeatPasswordEye)
-                              }
-                              className={`fa toggle-password ${
-                                repeatPasswordEye ? "fa-eye-slash" : "fa-eye"
-                              }`}
-                            />
-                          </div>
-                        )}
-                        defaultValue=""
-                      />
-
-                      <span className="text-danger">
-                        {errors?.repeatPassword?.message}
-                      </span>
-                    </div>
-                    <div className="input-block text-center">
-                      <Link
-                        to="#"
-                        className="btn btn-primary account-btn"
-                        onClick={handleSubmit(onSubmit)}
-                      >
-                        Register
-                      </Link>
-                    </div>
-                  </form>
-
-                  <div className="account-footer">
-                    <p>
-                      Already have an account? <Link to="/">Login</Link>
-                    </p>
+                          <span
+                            style={{ position: "absolute", right: "5%", top: "30%" }}
+                            onClick={() => setPasswordEye(!passwordEye)}
+                            className={`fa toggle-password ${passwordEye ? "fa-eye-slash" : "fa-eye"}`}
+                          />
+                        </div>
+                      )}
+                      defaultValue=""
+                    />
+                    <span className="text-danger">{errors?.password?.message}</span>
                   </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Repeat Password</label>
+                    <Controller
+                      name="repeatPassword"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <div className="pass-group" style={{ position: "relative" }}>
+                          <input
+                            type={repeatPasswordEye ? "password" : "text"}
+                            className={`form-control ${errors?.repeatPassword ? "error-input" : ""}`}
+                            value={value}
+                            onChange={onChange}
+                            autoComplete="off"
+                          />
+                          <span
+                            style={{ position: "absolute", right: "5%", top: "30%" }}
+                            onClick={() => setRepeatPasswordEye(!repeatPasswordEye)}
+                            className={`fa toggle-password ${repeatPasswordEye ? "fa-eye-slash" : "fa-eye"}`}
+                          />
+                        </div>
+                      )}
+                      defaultValue=""
+                    />
+                    <span className="text-danger">{errors?.repeatPassword?.message}</span>
+                  </div>
+                  {registrationError && (
+                    <div className="text-danger mb-3">{registrationError}</div>
+                  )}
+                  <div className="input-block text-center">
+                    <button type="submit" className="btn btn-primary account-btn">
+                      Register
+                    </button>
+                  </div>
+                </form>
+
+                <div className="account-footer">
+                  <p>
+                    Already have an account? <Link to="/">Login</Link>
+                  </p>
                 </div>
-                {/* /Account Form */}
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import DeleteModal from "../../../components/modelpopup/DeleteModal";
 import TicketModelPopup from "../../../components/modelpopup/TicketModelPopup";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import TicketFilter from "../../../components/TicketFilter";
+import EditTicket from "../../../components/modelpopup/EditTicket";
 
 
 const onSave = () => {
@@ -16,7 +17,9 @@ const onSave = () => {
 const Ticket = () => {
   const [users, setUsers] = useState([]);
   const [ticketToDelete, setTicketToDelete] = useState(null);
-  
+  const [ticketToEdit, setTicketToEdit] = useState(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+
   useEffect(() => {
     axios.get("/api/ticket.json")
     .then((res) => setUsers(res.data));
@@ -64,6 +67,10 @@ const Ticket = () => {
       console.error("There was an error deleting the ticket!", error);
     }
   };
+
+  const updateTicket = (updatedTicket) => {
+    setData(data.map(ticket => (ticket.id === updatedTicket.id ? updatedTicket : ticket)));
+  };
   
   const columns = [
     { 
@@ -86,12 +93,34 @@ const Ticket = () => {
       title: 'Company Name',
       dataIndex: 'companyName',
       key: 'companyName',
+      render: (text, record) => (
+        <Link
+          onClick={() => localStorage.setItem("minheight", "true")}
+          to={{
+            pathname: `/ticket-details/${record.id}`,
+            state: { ticket: record }
+          }}
+        >
+          {record.companyName}
+        </Link>
+      ),
       sorter: (a, b) => a.companyName.length - b.companyName.length,
     },
 
     {
       title: "Ticket Subject",
       dataIndex: "subject",
+      render: (text, record) => (
+        <Link
+          onClick={() => localStorage.setItem("minheight", "true")}
+          to={{
+            pathname: `/ticket-details/${record.id}`,
+            state: { ticket: record }
+          }}
+        >
+          {record.subject}
+        </Link>
+      ),
       sorter: (a, b) => a.ticketsubject.length - b.ticketsubject.length,
     },
     {
@@ -207,11 +236,15 @@ const Ticket = () => {
             <i className="material-icons">more_vert</i>
           </Link>
           <div className="dropdown-menu dropdown-menu-right">
-            <Link
+          <Link
               className="dropdown-item"
               to="#"
               data-bs-toggle="modal"
               data-bs-target="#edit_ticket"
+              onClick={() => {
+                setTicketToEdit(record);
+                setIsEditModalVisible(true);
+              }}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </Link>
@@ -234,9 +267,7 @@ const Ticket = () => {
   return (
     <>
       <div className="page-wrapper">
-        {/* Page Content */}
         <div className="content container-fluid">
-          {/* Page Header */}
           <Breadcrumbs
             maintitle="Tickets"
             title="Dashboard"
@@ -310,6 +341,14 @@ const Ticket = () => {
             setTicketToDelete(null);
           }
         }}
+      />
+      <EditTicket
+        visible={isEditModalVisible}
+        onClose={() => setIsEditModalVisible(false)}
+        onSave={updateTicket}
+        ticket={ticketToEdit}
+        staffs={staffs}
+        companies={companies}
       />
     </>
   );
