@@ -2,12 +2,12 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Applogo } from "../../../Routes/ImagePath"; // Adjust the path as needed
+import { Applogo } from "../../../Routes/ImagePath"; 
 import { Controller, useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useDispatch } from "react-redux";
-import { login } from "../../../user"; // Adjust the path to where your login function is defined
+import { login } from "../../../user"; 
 import axios from "axios";
 
 const validationSchema = Yup.object().shape({
@@ -92,16 +92,14 @@ const Login = () => {
             Apply Job
           </Link>
           <div className="container">
-            {/* Account Logo */}
             <div className="account-logo">
                 <img src={Applogo} alt="Spark CRM" />
             </div>
-            {/* /Account Logo */}
             <div className="account-box">
               <div className="account-wrapper">
                 <h3 className="account-title">Login</h3>
                 <p className="account-subtitle">Access to our dashboard</p>
-                {/* Account Form */}
+
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="input-block mb-4">
                     <label className="col-form-label">Email Address</label>
