@@ -32,58 +32,58 @@ export const SidebarData = [
           // },
         ],
       },
-      // {
-      //   menuValue: 'Apps',
-      //   hasSubRoute: true,
-      //   showSubRoute: false,
-      //   route: "#",
-      //   icon: "la la-cube",
-      //   subMenus: [
-      //     {
-      //       menuValue: 'Chats',
-      //       route: "/chat",
-      //     },
-      //     {
-      //       menuValue: 'Calls',
-      //       route: "#",
-      //       showMenuRoute: true,
-      //       subMenusValues: [
-      //           {
-      //               menuValue: 'Voice Call',
-      //               route: "/voice-call",
-      //             },
-      //           {
-      //               menuValue: 'Video Call',
-      //               route: "/video-call",
-      //             },
-      //           {
-      //               menuValue: 'Outgoing Call',
-      //               route: "/outgoing-call",
-      //             },
-      //           {
-      //               menuValue: 'Incoming Call',
-      //               route: "/incoming-call",
-      //             },
-      //       ]
-      //     },
-      //     {
-      //       menuValue: 'Calendar',
-      //       route: "/events",
-      //     },
-      //     {
-      //       menuValue: 'Contacts',
-      //       route: "/contacts",
-      //     },
-      //     {
-      //       menuValue: 'Email',
-      //       route: "/inbox",
-      //     },
-      //     {
-      //       menuValue: 'File Manager',
-      //       route: "/file-manager",
-      //     },
-      //   ],
-      // },
+      {
+        menuValue: 'Apps',
+        hasSubRoute: true,
+        showSubRoute: false,
+        route: "#",
+        icon: "la la-cube",
+        subMenus: [
+          {
+            menuValue: 'Chats',
+            route: "/chat",
+          },
+          // {
+          //   menuValue: 'Calls',
+          //   route: "#",
+          //   showMenuRoute: true,
+          //   subMenusValues: [
+          //       {
+          //           menuValue: 'Voice Call',
+          //           route: "/voice-call",
+          //         },
+          //       {
+          //           menuValue: 'Video Call',
+          //           route: "/video-call",
+          //         },
+          //       {
+          //           menuValue: 'Outgoing Call',
+          //           route: "/outgoing-call",
+          //         },
+          //       {
+          //           menuValue: 'Incoming Call',
+          //           route: "/incoming-call",
+          //         },
+          //   ]
+          // },
+          // {
+          //   menuValue: 'Calendar',
+          //   route: "/events",
+          // },
+          // {
+          //   menuValue: 'Contacts',
+          //   route: "/contacts",
+          // },
+          // {
+          //   menuValue: 'Email',
+          //   route: "/inbox",
+          // },
+          // {
+          //   menuValue: 'File Manager',
+          //   route: "/file-manager",
+          // },
+        ],
+      },
     ],
   },
   {

@@ -2,51 +2,71 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { Table } from "antd";
+import moment from 'moment';
 import DeleteModal from "../../../components/modelpopup/DeleteModal";
 import TicketModelPopup from "../../../components/modelpopup/TicketModelPopup";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import TicketFilter from "../../../components/TicketFilter";
 import EditTicket from "../../../components/modelpopup/EditTicket";
 
-
-const onSave = () => {
-  console.log('Ticket saved successfully!');
-  // Add any other logic you want to perform after saving the ticket
-};
-
 const Ticket = () => {
   const [users, setUsers] = useState([]);
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [ticketToEdit, setTicketToEdit] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [filters, setFilters] = useState({});
+  const [tickets, setTickets] = useState([]);
+
+  useEffect(() => {
+    fetch('https://wd79p.com/backend/public/api/tickets')
+      .then(response => response.json())
+      .then(data => setTickets(data))
+      .catch(error => console.error('Error fetching tickets:', error));
+  }, []);
+
+  const countTicketsByStatus = () => {
+    const statusCounts = {};
+    tickets.forEach(ticket => {
+      if (ticket.status in statusCounts) {
+        statusCounts[ticket.status]++;
+      } else {
+        statusCounts[ticket.status] = 1;
+      }
+    });
+    return statusCounts;
+  };
+
+  const statusCounts = countTicketsByStatus();
 
   useEffect(() => {
     axios.get("/api/ticket.json")
-    .then((res) => setUsers(res.data));
+      .then((res) => setUsers(res.data));
   }, []);
 
   const [data, setData] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [staffs, setStaff] = useState([]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const primaryResponse = await axios.get('https://wd79p.com/backend/public/api/tickets');
-      setData(primaryResponse.data);
-    };
-
-    const fetchCompanies = async () => {
-      const companyResponse = await axios.get('https://wd79p.com/backend/public/api/companies');
-      setCompanies(companyResponse.data);
-    };
-    const fetchStaff = async () => {
-      const staffResponse = await axios.get('https://wd79p.com/backend/public/api/users');
-      setStaff(staffResponse.data);
-    };
-
     fetchData();
     fetchCompanies();
     fetchStaff();
   }, []);
+
+  const fetchData = async () => {
+    const primaryResponse = await axios.get('https://wd79p.com/backend/public/api/tickets');
+    setData(primaryResponse.data);
+  };
+
+  const fetchCompanies = async () => {
+    const companyResponse = await axios.get('https://wd79p.com/backend/public/api/companies');
+    setCompanies(companyResponse.data);
+  };
+
+  const fetchStaff = async () => {
+    const staffResponse = await axios.get('https://wd79p.com/backend/public/api/users');
+    setStaff(staffResponse.data);
+  };
 
   const mergedData = data.map(item => {
     const company = companies.find(c => c.id === item.company_id);
@@ -56,7 +76,6 @@ const Ticket = () => {
       companyName: company ? company.name : '--',
       staffname: staff ? `${staff.first_name} ${staff.last_name}` : '--'
     };
-    
   });
 
   const deleteTicket = async (ticketId) => {
@@ -71,7 +90,39 @@ const Ticket = () => {
   const updateTicket = (updatedTicket) => {
     setData(data.map(ticket => (ticket.id === updatedTicket.id ? updatedTicket : ticket)));
   };
-  
+
+  const refreshTickets = () => {
+    fetchData();
+  };
+
+  const handlePriorityChange = async (id, newPriority) => {
+    await axios.put(`https://wd79p.com/backend/public/api/tickets/${id}`, { priority: newPriority });
+    fetchData();
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    await axios.put(`https://wd79p.com/backend/public/api/tickets/${id}`, { status: newStatus });
+    fetchData();
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  const applyFilters = (data) => {
+    return data.filter(ticket => {
+      return (
+        (!filters.id || ticket.id.toString().includes(filters.id)) &&
+        (!filters.subject || ticket.subject.toLowerCase().includes(filters.subject.toLowerCase())) &&
+        (!filters.companyName || ticket.companyName.toLowerCase().includes(filters.companyName.toLowerCase())) &&
+        (!filters.priority || ticket.priority === filters.priority) &&
+        (!filters.status || ticket.status === filters.status)
+      );
+    });
+  };
+
+  const filteredData = applyFilters(mergedData);
+
   const columns = [
     { 
       title: "Ticket Id",
@@ -87,8 +138,8 @@ const Ticket = () => {
           {record.id}
         </Link>
       ),
-     sorter: (a, b) => a.id.length - b.id.length,
-    },  
+      sorter: (a, b) => a.id.length - b.id.length,
+    },
     {
       title: 'Company Name',
       dataIndex: 'companyName',
@@ -104,9 +155,8 @@ const Ticket = () => {
           {record.companyName}
         </Link>
       ),
-      sorter: (a, b) => a.companyName.length - b.companyName.length,
+      sorter: (a, b) => a.companyName.localeCompare(b.companyName),
     },
-
     {
       title: "Ticket Subject",
       dataIndex: "subject",
@@ -121,29 +171,30 @@ const Ticket = () => {
           {record.subject}
         </Link>
       ),
-      sorter: (a, b) => a.ticketsubject.length - b.ticketsubject.length,
+      sorter: (a, b) => a.subject.length - b.subject.length,
     },
     {
       title: "Assigned Staff",
       dataIndex: "staffname",
       key: "staffname",
-      sorter: (a, b) => a.staffname.length - b.staffname.length,
+      sorter: (a, b) => a.staffname.localeCompare(b.staffname),
     },
     {
       title: "Created Date",
       dataIndex: "created_at",
-      sorter: (a, b) => a.createddate.length - b.createddate.length,
+      sorter: (a, b) => moment(a.created_at).unix() - moment(b.created_at).unix(),
+      render: (text) => moment(text).format('MMMM DD, YYYY [at] h:mma')
     },
-
     {
       title: "Last Reply",
       dataIndex: "updated_at",
-      sorter: (a, b) => a.lastreply.length - b.lastreply.length,
+      sorter: (a, b) => moment(a.updated_at).unix() - moment(b.updated_at).unix(),
+      render: (text) => moment(text).format('MMMM DD, YYYY [at] h:mma')
     },
     {
       title: "Priority",
       dataIndex: "priority",
-      render: (priority) => (
+      render: (priority, record) => (
         <div className="dropdown action-label">
           <Link
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
@@ -151,77 +202,71 @@ const Ticket = () => {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-          <i className={`far fa-dot-circle ${priority === 'Emergency' ? 'far fa-dot-circle text-danger' 
-          : priority === 'High' ? 'far fa-circle text-danger' 
-          : priority === 'Medium' ? 'far fa-circle text-warning' 
-          : 'far fa-circle text-success'}`} /> {priority}
+            <i className={`far fa-dot-circle ${priority === 'Emergency' ? 'far fa-dot-circle text-danger' 
+              : priority === 'High' ? 'far fa-circle text-danger' 
+              : priority === 'Medium' ? 'far fa-circle text-warning' 
+              : 'far fa-circle text-success'}`} /> {priority}
           </Link>
           <div className="dropdown-menu dropdown-menu-right">
-          <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'Emergency')}>
               <i className="far fa-dot-circle text-danger" /> Emergency
             </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'High')}>
               <i className="far fa-circle text-danger" /> High
             </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'Medium')}>
               <i className="far fa-circle text-warning" /> Medium
             </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'Low')}>
               <i className="far fa-circle text-success" /> Low
             </Link>
           </div>
         </div>
       ),
-      sorter: (a, b) => a.priority.length - b.priority.length,
+      sorter: (a, b) => a.priority.localeCompare(b.priority),
     },
     {
       title: "Status",
-  dataIndex: "status",
-  render: (status) => (
-    <div className="dropdown action-label text-center">
-      <Link
-        className="btn btn-white btn-sm btn-rounded dropdown-toggle"
-        to="#"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-      >
-        <i className={`far fa-dot-circle ${
-            status === 'New' ? 'far fa-circle text-success' 
-          : status === 'Open' ? 'far fa-dot-circle text-success' 
-          : status === 'Reopened' ? 'far fa-dot-circle text-info' 
-          : status === 'On Hold' ? 'far fa-dot-circle text-warning' 
-          : status === 'Closed' ? 'far fa-dot-circle text-danger' 
-          : status === 'In Progress' ? 'far fa-circle text-info' 
-          : status === 'Cancelled' ? 'far fa-circle text-dangertext-danger' 
-          : ''
-        }`} /> {status}
-      </Link>
+      dataIndex: "status",
+      render: (status, record) => (
+        <div className="dropdown action-label text-center">
+          <Link
+            className="btn btn-white btn-sm btn-rounded dropdown-toggle"
+            to="#"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i className={`far fa-dot-circle ${
+                status === 'New' ? 'far fa-circle text-success' 
+              : status === 'Open' ? 'far fa-dot-circle text-success' 
+              : status === 'Reopened' ? 'far fa-dot-circle text-info' 
+              : status === 'On Hold' ? 'far fa-dot-circle text-warning' 
+              : status === 'Closed' ? 'far fa-dot-circle text-danger' 
+              : status === 'In Progress' ? 'far fa-circle text-info' 
+              : status === 'Cancelled' ? 'far fa-circle text-dangertext-danger' 
+              : ''
+            }`} /> {status}
+          </Link>
           <div className="dropdown-menu dropdown-menu-right">
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'New')}>
               <i className="far fa-circle text-success" /> New
             </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'Open')}>
               <i className="far fa-dot-circle text-success" /> Open
             </Link>
-            <Link className="dropdown-item" to="#">
-              <i className="far fa-dot-circle text-info" /> Reopened
-            </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'On Hold')}>
               <i className="far fa-dot-circle text-warning" /> On Hold
             </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'Closed')}>
               <i className="far fa-dot-circle text-danger" /> Closed
             </Link>
-            <Link className="dropdown-item" to="#">
-              <i className="far fa-circle text-info" /> In Progress
-            </Link>
-            <Link className="dropdown-item" to="#">
+            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'Cancelled')}>
               <i className="far fa-circle text-dangertext-danger" /> Cancelled
             </Link>
           </div>
         </div>
       ),
-      sorter: (a, b) => a.status.length - b.status.length,
+      sorter: (a, b) => a.status.localeCompare(b.status),
     },
     {
       title: "Action",
@@ -236,7 +281,7 @@ const Ticket = () => {
             <i className="material-icons">more_vert</i>
           </Link>
           <div className="dropdown-menu dropdown-menu-right">
-          <Link
+            <Link
               className="dropdown-item"
               to="#"
               data-bs-toggle="modal"
@@ -276,46 +321,21 @@ const Ticket = () => {
             name="Add Ticket"
           />
           <div className="row">
-            <div className="col-md-12">
-              <div className="card-group m-b-30">
-                {users?.map((user, index) => (
-                  <div className="card" key={index}>
-                    <div className="card-body">
-                      <div className="d-flex justify-content-between mb-3">
-                        <div>
-                          <span className="d-block">{user.title}</span>
-                        </div>
-                        <div>
-                          <span
-                            className={
-                              user.percentage.includes("-")
-                                ? "text-danger"
-                                : "text-success"
-                            }
-                          >
-                            {user.percentage}
-                          </span>
-                        </div>
-                      </div>
-                      <h3 className="mb-3">{user.value}</h3>
-                      <div className="progress mb-2" style={{ height: "5px" }}>
-                        <div
-                          className="progress-bar bg-primary"
-                          role="progressbar"
-                          style={{ width: "70%" }}
-                          aria-valuenow={40}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+      <div className="col-md-12">
+        <div className="card-group m-b-30">
+          {Object.keys(statusCounts).map((status, index) => (
+            <div className="card" key={index}>
+              <div className="card-body">
+                <h4 className="card-title">{status}</h4>
+                <p className="card-text">Count: {statusCounts[status]}</p>
               </div>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+    </div>
 
-          <TicketFilter />
+          <TicketFilter onFilterChange={handleFilterChange} />
 
           <div className="row">
             <div className="col-md-12">
@@ -325,14 +345,14 @@ const Ticket = () => {
                   rowKey={(record) => record.id}
                   style={{ overflowX: "auto" }}
                   columns={columns}
-                  dataSource={mergedData}
+                  dataSource={filteredData}
                 />
               </div>
             </div>
           </div>
         </div>
       </div>
-      <TicketModelPopup onSave={onSave}/>
+      <TicketModelPopup onSave={refreshTickets}/>
       <DeleteModal
         Name={ticketToDelete ? `Ticket #${ticketToDelete.id}` : 'Delete Ticket'}
         deleteAction={() => {

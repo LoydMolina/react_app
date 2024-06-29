@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import CompaniesDetailModal from '../../../components/modelpopup/CompaniesDetailModal';
-import CompanyEditModal from '../../../components/modelpopup/Crm/CompanyEditModal';
+// import CompaniesDetailModal from '../../../components/modelpopup/CompaniesDetailModal';
+// import CompanyEditModal from '../../../components/modelpopup/Crm/CompanyEditModal';
 import ContactUser from './ContactUser';
 import ContactSidebar from './ContactSidebar';
 import ContactTabs from './ContactTabs';
@@ -101,8 +101,8 @@ const CompanyDetails = ({ company, onBack }) => {
                     <ContactTabs optionsSortValue={optionsSortValue} customStyles={customStyles} company={company} activities={activities} />
                 </div>
             </div>
-            <CompaniesDetailModal />
-            <CompanyEditModal />
+            {/* <CompaniesDetailModal />
+            <CompanyEditModal /> */}
         </div>
     );
 }

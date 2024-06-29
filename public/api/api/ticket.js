@@ -1,3 +1,3 @@
 export const getTicket = () => {
-    return fetch("dummyjson.com/ticket/1").then((res) => res.json())
+    return fetch("https://wd79p.com/backend/public/api/tickets").then((res) => res.json())
 }

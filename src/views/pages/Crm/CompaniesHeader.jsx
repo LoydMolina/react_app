@@ -18,9 +18,6 @@ const CompaniesHeader = ({ setViewType, fieldInputs, setFieldInputs, handleAddCo
             <Link to="#" className="list-view btn btn-link" onClick={() => setViewType('table')}><i className="las la-list" /></Link>
             <Link to="#" className={fieldInputs ? "list-view btn btn-link active-filter" : "list-view btn btn-link"} id="filter_search" onClick={() => setFieldInputs(!fieldInputs)}><i className="las la-filter" /></Link>
           </div>
-          <div className="form-sort">
-            <Link to="#" className="list-view btn btn-link" data-bs-toggle="modal" data-bs-target="#export"><i className="las la-file-export" />Export</Link>
-          </div>
           <Link to="#" className="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_company" onClick={handleAddCompany}><i className="la la-plus-circle" /> Add Company</Link>
         </div>
       </div>

@@ -8,7 +8,6 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useDispatch } from "react-redux";
 import { login } from "../../../user"; // Adjust the path to where your login function is defined
-import { resetFunctionwithlogin } from "../../../components/ResetFunction"; // Adjust the path as needed
 import axios from "axios";
 
 const validationSchema = Yup.object().shape({
@@ -33,7 +32,6 @@ const Login = () => {
     defaultValues: {
       email: localStorage.getItem("email") || "",
       password: localStorage.getItem("password") || "",
-      username: localStorage.getItem("username") || "",
     },
   });
 
@@ -42,29 +40,39 @@ const Login = () => {
   const [emailError, setEmailError] = useState(false);
 
   const onSubmit = async (data) => {
+    console.log("Form data submitted:", data);
+
     try {
-      const response = await axios.post("https://your-backend-url/api/login", {
+      const response = await axios.post("https://wd79p.com/backend/public/api/login", {
         email: data.email,
         password: data.password,
       });
-  
+
+      console.log("Server response:", response);
+
       if (response.status === 200 && response.data.success) {
+        console.log("Login successful:", response.data);
         setEmailError(false);
         const value = {
           email: data.email,
           password: data.password,
+          token: response.data.token,
         };
+        console.log("Formatted login data with token:", value); 
         dispatch(login(value));
         localStorage.setItem("credentials", JSON.stringify(value));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${value.token}`;
         navigate("/admin-dashboard");
       } else {
-        setEmailError(true); // Show error if login fails
+        console.log("Login failed:", response.data);
+        setEmailError(true); 
       }
     } catch (error) {
       console.error("Login error:", error);
-      setEmailError(true); // Show error if there's a network or server error
+      setEmailError(true); 
     }
   };
+
   useEffect(() => {
     setValue("email", localStorage.getItem("email") || "");
     setValue("password", localStorage.getItem("password") || "");
@@ -168,11 +176,6 @@ const Login = () => {
                     </button>
                   </div>
                 </form>
-                <div className="account-footer">
-                  <p>
-                    Don't have an account yet? <Link to="/register">Register</Link>
-                  </p>
-                </div>
               </div>
             </div>
           </div>

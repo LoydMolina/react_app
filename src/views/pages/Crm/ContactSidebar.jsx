@@ -47,7 +47,9 @@ const ContactSidebar = ({ company }) => (
             </div>
             <ul className="company-info com-info">
                 <li>
+                    <div>
                     <span><img src={company.profile_image || 'default-image-path'} alt="companyicon" /></span>
+                    </div>
                     <div>
                         <h6>{company.name}</h6>
                     </div>

@@ -12,7 +12,7 @@ import { getCompanies, deleteCompany } from '../../../apiService';
 const Companies = () => {
   const [companies, setCompanies] = useState([]);
   const [filteredCompanies, setFilteredCompanies] = useState([]);
-  const [fieldInputs, setFieldInputs] = useState(false);
+  const [fieldInputs, setFieldInputs] = useState(true);
   const [inputValue, setInputValue] = useState("");
   const [inputValueTwo, setInputValueTwo] = useState("");
   const [inputValueThree, setInputValueThree] = useState("");
@@ -75,7 +75,7 @@ const Companies = () => {
 
   const columns = [
     {
-      title: "Name",
+      title: "Company Name",
       dataIndex: "name",
       render: (text, record) => (
         <div className="d-flex">
@@ -92,7 +92,7 @@ const Companies = () => {
       sorter: (a, b) => a.name.length - b.name.length,
     },
     {
-      title: "Email",
+      title: "Company Email",
       dataIndex: "email",
       sorter: (a, b) => a.email.length - b.email.length,
     },
@@ -137,12 +137,6 @@ const Companies = () => {
               onClick={() => setSelectedCompany(record)}
             >
               <i className="fa fa-trash m-r-5" /> Delete
-            </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handleSelectCompany(record)}>
-              <i className="fa-regular fa-eye"></i> Preview
-            </Link>
-            <Link className="dropdown-item" to="#" data-bs-toggle="modal" data-bs-target="#add_notes" >
-              <i className="la la-file-prescription"></i> Notes
             </Link>
           </div>
         </div>

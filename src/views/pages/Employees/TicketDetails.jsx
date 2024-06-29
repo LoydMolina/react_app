@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Avatar_05, Avatar_08, Avatar_09, Avatar_10, Avatar_11, avatar1, avatar27, avatar28 } from '../../../Routes/ImagePath'
+import { Avatar_05, Avatar_08, Avatar_09, Avatar_10, Avatar_11 } from '../../../Routes/ImagePath'
 import axios from 'axios';
 
 const TicketDetails = () => {
@@ -40,6 +40,11 @@ const TicketDetails = () => {
         return <div>Error loading ticket details: {error.message}</div>;
     }
 
+    const navigateToTicketPage = () => {
+        // Replace '/ticket' with the actual path to your ticket page
+        window.location.href = '/tickets';
+    };
+
 
     return (
         <>
@@ -52,6 +57,13 @@ const TicketDetails = () => {
                             <div className="col-md-4">
                                 <h3 className="page-title mb-0">Ticket Detail</h3>
                             </div>
+                            <div className="col-md-8 float-end ms-auto">
+                            <div className="d-flex title-head">
+                            <Link to="#" className="btn btn-link" onClick={navigateToTicketPage}>
+                                <i className="las la-arrow-left" /> Back
+                            </Link>
+                            </div>
+                        </div>
                         </div>
                     </div>
                     {/* /Page Header */}
@@ -60,6 +72,19 @@ const TicketDetails = () => {
                         <div className="col-xl-8 col-lg-7">
                             <div className="ticket-detail-head">
                                 <div className="row">
+                                <div className="col-xxl-3 col-md-6">
+                                        <div className="ticket-head-card">
+                                            <span className="ticket-detail-icon">
+                                                <i className="la la-stop-circle" />
+                                            </span>
+                                            <div className="detail-info">
+                                                <h6>Ticket Id</h6>
+                                                <span className="badge badge-soft-warning">
+                                                    {ticket.id}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="col-xxl-3 col-md-6">
                                         <div className="ticket-head-card">
                                             <span className="ticket-detail-icon">
@@ -85,18 +110,25 @@ const TicketDetails = () => {
                                         </div>
                                     </div>
                                     <div className="col-xxl-3 col-md-6">
-                                        <div className="ticket-head-card">
-                                            <span className="ticket-detail-icon bg-warning-lights">
-                                                <i className="la la-calendar" />
+                                    <div className="ticket-head-card">
+                                        <span className="ticket-detail-icon bg-warning-lights">
+                                            <i className="la la-calendar" />
+                                        </span>
+                                        <div className="detail-info info-two">
+                                            <h6>Created Date</h6>
+                                            <span>
+                                                {new Date(ticket.created_at).toLocaleString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: 'numeric',
+                                                    hour12: true
+                                                })}
                                             </span>
-                                            <div className="detail-info info-two">
-                                                <h6>Created Date</h6>
-                                                <span>
-                                                    {ticket.created_at}
-                                                </span>
-                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                     <div className="col-xxl-3 col-md-6">
                                         <div className="ticket-head-card">
                                             <span className="ticket-detail-icon bg-purple-lights">
@@ -117,278 +149,31 @@ const TicketDetails = () => {
                                 <ul>
                                 {ticket.description}
                                 </ul>
-
                             </div>
                             <div className="attached-files-info">
                                 <div className="row">
                                     <div className="col-xxl-6">
                                         <div className="attached-files">
                                             <ul>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-file-pdf" />
-                                                        </span>
-                                                        <p>file0702202413.pdf</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-file-pdf" />
-                                                        </span>
-                                                        <p>file0702202414.pdf</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-file-alt" />
-                                                        </span>
-                                                        <p>file0702202418.doc</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-file-alt" />
-                                                        </span>
-                                                        <p>file0702202419.doc</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-file-alt" />
-                                                        </span>
-                                                        <p>file0702202420.doc</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
+                                               {/* files here */}
                                             </ul>
                                         </div>
                                     </div>
                                     <div className="col-xxl-6">
                                         <div className="attached-files media-attached-files">
                                             <ul>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-image" />
-                                                        </span>
-                                                        <p>Image0702202411.jpg</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-image" />
-                                                        </span>
-                                                        <p>Image0702202412.jpg</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-file-video" />
-                                                        </span>
-                                                        <p>Video0702202415.mp4</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-image" />
-                                                        </span>
-                                                        <p>Image0702202420.png</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div className="d-flex align-items-center">
-                                                        <span className="file-icon">
-                                                            <i className="la la-image" />
-                                                        </span>
-                                                        <p>Image0702202421.png</p>
-                                                    </div>
-                                                    <div className="file-download">
-                                                        <Link to="#">
-                                                            <i className="la la-download" />
-                                                            Download
-                                                        </Link>
-                                                    </div>
-                                                </li>
+                                                {/* files here */}
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="col-xl-4 col-lg-5 theiaStickySidebar">
-                            <div className='stickybar'>
-                                <div className="ticket-chat">
-                                    <div className="ticket-chat-head">
-                                        <h4>Ticket Chat</h4>
-                                        <div className="chat-post-box">
-                                            <form>
-                                                <textarea
-                                                    className="form-control"
-                                                    rows={4}
-                                                    defaultValue={"Post"}
-                                                />
-                                                <div className="files-attached d-flex justify-content-between align-items-center">
-                                                    <div className="post-files">
-                                                        <Link to="#">
-                                                            <i className="la la-image" />
-                                                        </Link>
-                                                        <Link to="#">
-                                                            <i className="la la-file-video" />
-                                                        </Link>
-                                                    </div>
-                                                    <button type="submit">Sent</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <div className="ticket-chat-body">
-                                        <ul className="created-tickets-info">
-                                            <li>
-                                                <div className="ticket-created-user">
-                                                    <span className="avatar">
-                                                        <img
-                                                            src={avatar27}
-                                                            alt="img"
-                                                        />
-                                                    </span>
-                                                    <div className="user-name">
-                                                        <h5>
-                                                            <span>John Doe</span> posted a status
-                                                        </h5>
-                                                        <span>5 hours ago</span>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div className="ticket-created-info">
-                                                    <h6>Impact on Work</h6>
-                                                    <p>
-                                                        This issue disrupts meetings, delays task completion, and
-                                                        affects my overall productivity.
-                                                    </p>
-                                                    <Link to="#" className="comment-text">
-                                                        <i className="la la-comments me-2" />
-                                                        Comments (2)
-                                                    </Link>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div className="ticket-created-user">
-                                                    <span className="avatar">
-                                                        <img
-                                                            src={avatar1}
-                                                            alt="img"
-                                                        />
-                                                    </span>
-                                                    <div className="user-name">
-                                                        <h5>
-                                                            <span>Rebecca Velazquez</span>
-                                                        </h5>
-                                                        <span>2 hours ago</span>
-                                                    </div>
-                                                </div>
-                                                <p className="details-text">
-                                                    Check the System and Application logs in the Event Viewer
-                                                    for warnings or errors that coincide with the times the
-                                                    freezes occur.
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <div className="ticket-created-user">
-                                                    <span className="avatar">
-                                                        <img
-                                                            src={avatar28}
-                                                            alt="img"
-                                                        />
-                                                    </span>
-                                                    <div className="user-name">
-                                                        <h5>
-                                                            <span>Rahul Daviz</span>
-                                                        </h5>
-                                                        <span>3 hours ago</span>
-                                                    </div>
-                                                </div>
-                                                <p className="details-text">
-                                                    Confirm that basic troubleshooting steps have been correctly
-                                                    executed (restarts, updates, antivirus scans).
-                                                </p>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div className="ticket-chat-footer">
-                                        <form>
-                                            <div className="d-flex justify-content-between align-items-center">
-                                                <input type="text" className="form-control" />
-                                                <button type="submit">
-                                                    <i className="la la-arrow-right" />
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
+                            <div class="reply">
+                            <textarea id="replyTextArea" rows="4" style={{ width: '100%' }} placeholder="Type your reply here..."></textarea>
+                            <button type="button" style={{ backgroundColor: '#FFCC80' }}>Reply</button>
                             </div>
                         </div>
+
                     </div>
                 </div>
                 {/* Edit Ticket Modal */}

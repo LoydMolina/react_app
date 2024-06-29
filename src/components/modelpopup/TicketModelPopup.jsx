@@ -103,7 +103,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     // else if (!/^https?:\/\/[^\s$.?#].[^\s]*$/.test(formData.website)) {
     //   newErrors.website = 'Website must be a valid URL';
     // }
-    // if (!formData.status) newErrors.status = 'Status is required';
+    if (!formData.status) newErrors.status = 'Status is required';
     return newErrors;
   };
 
