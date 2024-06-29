@@ -50,7 +50,7 @@ const Login = () => {
 
       console.log("Server response:", response);
 
-      if (response.status === 200 && response.data.success) {
+      if (response.status === 200 && response.data.token) {
         console.log("Login successful:", response.data);
         setEmailError(false);
         const value = {
