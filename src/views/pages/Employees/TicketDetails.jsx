@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Avatar_05, Avatar_08, Avatar_09, Avatar_10, Avatar_11 } from '../../../Routes/ImagePath'
 import axios from 'axios';
+import moment from 'moment';
 
 const TicketDetails = () => {
     const { id } = useParams();
@@ -9,6 +10,23 @@ const TicketDetails = () => {
     const [companyName, setCompanyName] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [activities, setActivities] = useState([]);
+
+
+    useEffect(() => {
+        const fetchActivities = async () => {
+            try {
+                const response = await axios.get(`https://wd79p.com/backend/public/api/tickets/${id}/activities`);
+                setActivities(response.data);
+            } catch (error) {
+                setError(error);
+            }
+        };
+
+        if (ticket) {
+            fetchActivities();
+        }
+    }, [id, ticket]);
 
     useEffect(() => {
         const fetchTicketDetails = async () => {
@@ -41,17 +59,14 @@ const TicketDetails = () => {
     }
 
     const navigateToTicketPage = () => {
-        // Replace '/ticket' with the actual path to your ticket page
         window.location.href = '/tickets';
     };
 
 
     return (
         <>
-            {/* Page Wrapper */}
             <div className="page-wrapper">
                 <div className="content container-fluid">
-                    {/* Page Header */}
                     <div className="page-header">
                         <div className="row align-items-center">
                             <div className="col-md-4">
@@ -66,7 +81,6 @@ const TicketDetails = () => {
                         </div>
                         </div>
                     </div>
-                    {/* /Page Header */}
                     <hr />
                     <div className="row">
                         <div className="col-xl-8 col-lg-7">
@@ -173,9 +187,32 @@ const TicketDetails = () => {
                             <button type="button" style={{ backgroundColor: '#FFCC80' }}>Reply</button>
                             </div>
                         </div>
-
+                        <div className="col-xl-4 col-lg-5 theiaStickySidebar">
+    <div className='stickybar'>
+        <div className="ticket-chat">
+            <h4>Activity Log</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {activities.map(activity => (
+                        <tr key={activity.id}>
+                            <td>{activity.action}</td>
+                            <td>{moment(activity.created_at).format('MMMM DD, YYYY [at] h:mma')}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
+                
                 {/* Edit Ticket Modal */}
                 <div id="edit_ticket" className="modal custom-modal fade" role="dialog">
                     <div

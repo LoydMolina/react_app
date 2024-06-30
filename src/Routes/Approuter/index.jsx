@@ -1,3 +1,4 @@
+// AppRouter.jsx
 import React, { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import AppContainer from "../Appcontainer";
@@ -36,7 +37,6 @@ import Spinners from "../../views/pages/Ui_Interface/Components/Spinners";
 import SweetAlert from "../../views/pages/Ui_Interface/Components/SweetAlert";
 import Tabs from "../../views/pages/Ui_Interface/Components/Tabs";
 import Toats from "../../views/pages/Ui_Interface/Components/Toats";
-// import Tooltip from "../../views/pages/Ui_Interface/Components/Tooltip";
 import Typography from "../../views/pages/Ui_Interface/Components/Typography";
 import Videos from "../../views/pages/Ui_Interface/Components/Videos";
 import Lightbox from "../../views/pages/Ui_Interface/Components/Lightbox";
@@ -50,86 +50,219 @@ import Spinner from "../../views/pages/Ui_Interface/Components/Spinner";
 import Tooltips from "../../views/pages/Ui_Interface/Components/Tooltip";
 import ComingSoon from "../../views/pages/Pages/ComingSoon";
 import UnderManitenance from "../../views/pages/Pages/UnderManitenance";
-// import Ticket from "../../views/pages/Employees/Ticket";
-// import TicketDetails from "../../views/pages/Employees/TicketDetails";
-// import routingObjects from "../Appcontainer/index"
+import { AuthProvider } from "../../AuthContext";
+import ProtectedRoute from "../../ProtectedRoute";
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+    const { pathname } = useLocation();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
 
-  return null;
+    return null;
 };
 
 const AppRouter = () => {
-  useEffect(() => {
-    localStorage.setItem("email", "");
-    localStorage.setItem("password", "");
-  }, []);
-  return (
-    <div>
-      <Provider store={store}>
-        <BrowserRouter basename="/">
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/change-password" element={<ChangePassword />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/otp" element={<Otp />} />
-            <Route path="/error-404" element={<Error404 />} />
-            <Route path="/error-500" element={<Error500 />} />
-            <Route path="/coming-soon" element={<ComingSoon />} />
-            <Route path="/under-maintenance" element={<UnderManitenance />} />
+    useEffect(() => {
+        localStorage.setItem("email", "");
+        localStorage.setItem("password", "");
+    }, []);
 
-            <Route path="/job-list" element={<JobList />} />
-            <Route path="/job-view" element={<JobView />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/lock-screen" element={<LockScreen />} />
-            <Route path="/accordion" element={<Accordions />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/breadcrumbs" element={<Breadcrumbs />} />
-            <Route path="/avatar" element={<Avatar />} />
-            <Route path="/badges" element={<Badges />} />
-            <Route path="/buttons" element={<ButtonCard />} />
-            <Route path="/buttongroup" element={<ButtonGroup />} />
-            <Route path="/cards" element={<Cards />} />
-            <Route path="/dropdowns" element={<Dropdowns />} />
-            <Route path="/grid" element={<Grid />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/media" element={<Media />} />
-            <Route path="/modal" element={<Modals />} />
-            <Route path="/offcanvas" element={<Offcanvas />} />
-            <Route path="/pagination" element={<Pagination />} />
-            <Route path="/popover" element={<Popover />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/placeholders" element={<Placeholder />} />
-            <Route path="/rangeslider" element={<RangeSlider />} />
-            <Route path="/spinners" element={<Spinners />} />
-            <Route path="/sweetalert" element={<SweetAlert />} />
-            <Route path="/nav-tabs" element={<Tabs />} />
-            <Route path="/toastr" element={<Toats />} />
-            <Route path="/tooltips" element={<Tooltips />} />
-            <Route path="/typography" element={<Typography />} />
-            <Route path="/video" element={<Videos />} />
-            <Route path="/lightbox" element={<Lightbox />} />
-            <Route path="/carousel" element={<Carousel />} />
-            <Route path="/carousel" element={<Carousel />} />
-            <Route path="/borders" element={<Borders />} />
-            <Route path="/breadcrumb" element={<Breadcrumb />} />
-            <Route path="/colors" element={<Colors />} />
-            <Route path="/modals" element={<UiModals />} />
-            <Route path="/spinner" element={<Spinner />} />
-            <Route path="/*" element={<AppContainer />} />
-            <Route path="*" element={<Navigate to="/" />} />
+    return (
+        <Provider store={store}>
+            <AuthProvider>
+                <BrowserRouter basename="/">
+                    <ScrollToTop />
+                    <Routes>
+                        <Route path="/" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/otp" element={<Otp />} />
+                        <Route path="/error-404" element={<Error404 />} />
+                        <Route path="/error-500" element={<Error500 />} />
+                        <Route path="/coming-soon" element={<ComingSoon />} />
+                        <Route path="/under-maintenance" element={<UnderManitenance />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/lock-screen" element={<LockScreen />} />
+                        <Route path="/job-list" element={<JobList />} />
+                        <Route path="/job-view" element={<JobView />} />
 
-          </Routes>
-        </BrowserRouter>
-      </Provider>
-    </div>
-  );
+                        <Route path="/*" element={
+                            <ProtectedRoute>
+                                <AppContainer />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/change-password" element={
+                            <ProtectedRoute>
+                                <ChangePassword />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/accordion" element={
+                            <ProtectedRoute>
+                                <Accordions />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/alerts" element={
+                            <ProtectedRoute>
+                                <Alerts />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/breadcrumbs" element={
+                            <ProtectedRoute>
+                                <Breadcrumbs />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/avatar" element={
+                            <ProtectedRoute>
+                                <Avatar />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/badges" element={
+                            <ProtectedRoute>
+                                <Badges />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/buttons" element={
+                            <ProtectedRoute>
+                                <ButtonCard />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/buttongroup" element={
+                            <ProtectedRoute>
+                                <ButtonGroup />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/cards" element={
+                            <ProtectedRoute>
+                                <Cards />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/dropdowns" element={
+                            <ProtectedRoute>
+                                <Dropdowns />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/grid" element={
+                            <ProtectedRoute>
+                                <Grid />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/images" element={
+                            <ProtectedRoute>
+                                <Images />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/media" element={
+                            <ProtectedRoute>
+                                <Media />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/modal" element={
+                            <ProtectedRoute>
+                                <Modals />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/offcanvas" element={
+                            <ProtectedRoute>
+                                <Offcanvas />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/pagination" element={
+                            <ProtectedRoute>
+                                <Pagination />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/popover" element={
+                            <ProtectedRoute>
+                                <Popover />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/progress" element={
+                            <ProtectedRoute>
+                                <Progress />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/placeholders" element={
+                            <ProtectedRoute>
+                                <Placeholder />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/rangeslider" element={
+                            <ProtectedRoute>
+                                <RangeSlider />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/spinners" element={
+                            <ProtectedRoute>
+                                <Spinners />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/sweetalert" element={
+                            <ProtectedRoute>
+                                <SweetAlert />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/tabs" element={
+                            <ProtectedRoute>
+                                <Tabs />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/toast" element={
+                            <ProtectedRoute>
+                                <Toats />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/typography" element={
+                            <ProtectedRoute>
+                                <Typography />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/videos" element={
+                            <ProtectedRoute>
+                                <Videos />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/lightbox" element={
+                            <ProtectedRoute>
+                                <Lightbox />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/carousel" element={
+                            <ProtectedRoute>
+                                <Carousel />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/borders" element={
+                            <ProtectedRoute>
+                                <Borders />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/breadcrumb" element={
+                            <ProtectedRoute>
+                                <Breadcrumb />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/colors" element={
+                            <ProtectedRoute>
+                                <Colors />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/modals" element={
+                            <ProtectedRoute>
+                                <UiModals />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/spinner" element={
+                            <ProtectedRoute>
+                                <Spinner />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
+                </BrowserRouter>
+            </AuthProvider>
+        </Provider>
+    );
 };
 
 export default AppRouter;

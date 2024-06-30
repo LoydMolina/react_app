@@ -21,8 +21,10 @@ import { FaRegBell, FaRegComment } from "react-icons/fa";
 import { useLocation } from "react-router-dom/dist";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
+import { useAuth } from "../../AuthContext"; 
 
 const Header = (props) => {
+  const { logout } = useAuth(); 
   const data = notifications.notifications;
   const datas = message.message;
   const [notification, setNotifications] = useState(false);
@@ -47,12 +49,6 @@ const Header = (props) => {
     setflag(false);
   };
 
-  // const handleFlags = () => {
-  //   setflag(!flag);
-  //   setIsOpen(false);
-  //   setNotifications(false);
-  //   setProfile(false);
-  // };
   const handleNotification = () => {
     setNotifications(!notification);
     setflag(false);
@@ -68,26 +64,35 @@ const Header = (props) => {
 
   const location = useLocation();
   let pathname = location.pathname;
-  // const { value } = useSelector((state) => state.user);
+
   const Credencial = localStorage.getItem("credencial");
   const Value = JSON.parse(Credencial);
   const UserName = Value?.email?.split("@")[0];
-  const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1);
+  const ProfileName =
+    UserName?.charAt(0).toUpperCase() + UserName?.slice(1);
 
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
-    // Debugging statement
     i18n.changeLanguage(lng);
     setFlagImage(
       lng === "en"
         ? lnEnglish
         : lng === "fr"
-          ? lnFrench
-          : lng === "es"
-            ? lnSpanish
-            : lnGerman
+        ? lnFrench
+        : lng === "es"
+        ? lnSpanish
+        : lnGerman
     );
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
@@ -95,7 +100,7 @@ const Header = (props) => {
       {/* Logo */}
       <div className="header-left">
         <Link to="/admin-dashboard" className="logo">
-        <img src={Applogo} width={75} height={75} alt="img" />
+          <img src={Applogo} width={75} height={75} alt="img" />
         </Link>
         <Link to="/admin-dashboard" className="logo2">
           <img src={Applogo} width={40} height={40} alt="img" />
@@ -109,8 +114,8 @@ const Header = (props) => {
           display: pathname.includes("tasks")
             ? "none"
             : pathname.includes("compose")
-              ? "none"
-              : "",
+            ? "none"
+            : "",
         }}
         onClick={handlesidebar}
       >
@@ -155,7 +160,6 @@ const Header = (props) => {
         </li>
         {/* /Search */}
         {/* Flag */}
-
         <li className="nav-item dropdown has-arrow flag-nav">
           <Link
             className="nav-link dropdown-toggle"
@@ -211,8 +215,9 @@ const Header = (props) => {
             <span className="badge badge-pill">3</span>
           </Link>
           <div
-            className={`dropdown-menu dropdown-menu-end notifications ${notification ? "show" : ""
-              }`}
+            className={`dropdown-menu dropdown-menu-end notifications ${
+              notification ? "show" : ""
+            }`}
           >
             <div className="topnav-dropdown-header">
               <span className="notification-title">Notifications</span>
@@ -286,8 +291,9 @@ const Header = (props) => {
             <span className="badge badge-pill">8</span>
           </Link>
           <div
-            className={`dropdown-menu dropdown-menu-end notifications ${isOpen ? "show" : ""
-              }`}
+            className={`dropdown-menu dropdown-menu-end notifications ${
+              isOpen ? "show" : ""
+            }`}
           >
             <div className="topnav-dropdown-header">
               <span className="notification-title">Messages</span>
@@ -314,7 +320,9 @@ const Header = (props) => {
                             </span>
                           </div>
                           <div className="list-body">
-                            <span className="message-author">{value.name}</span>
+                            <span className="message-author">
+                              {value.name}
+                            </span>
                             <span className="message-time">{value.time}</span>
                             <div className="clearfix" />
                             <span className="message-content">
@@ -354,16 +362,20 @@ const Header = (props) => {
             <span>{ProfileName ? `${ProfileName}` : "Admin"}</span>
           </Link>
           <div
-            className={`dropdown-menu dropdown-menu-end ${profile ? "show" : ""
-              }`}
+            className={`dropdown-menu dropdown-menu-end ${
+              profile ? "show" : ""
+            }`}
           >
             <Link className="dropdown-item" to="/profile">
               My Profile
             </Link>
-            <Link className="dropdown-item" to="/settings/companysetting">
+            <Link
+              className="dropdown-item"
+              to="/settings/companysetting"
+            >
               Settings
             </Link>
-            <Link className="dropdown-item" to="/">
+            <Link className="dropdown-item" to="/" onClick={handleLogout}>
               Logout
             </Link>
           </div>
@@ -384,11 +396,14 @@ const Header = (props) => {
           <Link className="dropdown-item" to="/profile">
             My Profile
           </Link>
-          <Link className="dropdown-item" to="/settings/companysetting">
+          <Link
+            className="dropdown-item"
+            to="/settings/companysetting"
+          >
             Settings
           </Link>
-          <Link className="dropdown-item" to="/login">
-            Logout  
+          <Link className="dropdown-item" to="/" onClick={handleLogout}>
+            Logout
           </Link>
         </div>
       </div>
