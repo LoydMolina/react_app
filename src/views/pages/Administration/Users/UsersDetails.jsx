@@ -34,6 +34,10 @@ const UsersDetails = () => {
         fetchUserDetails();
     }, [id]);
 
+    const navigateToUserPage = () => {
+        window.location.href = '/users';
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -52,14 +56,35 @@ const UsersDetails = () => {
                             <div className="col-md-4">
                                 <h3 className="page-title mb-0">User Details</h3>
                             </div>
+                            <div className="col-md-8 float-end ms-auto">
+                            <div className="d-flex title-head">
+                            <Link to="#" className="btn btn-link" onClick={navigateToUserPage}>
+                                <i className="las la-arrow-left" /> Back
+                            </Link>
+                            </div>
+                            </div>
                         </div>
                     </div>
+                    
                     {/* /Page Header */}
                     <hr />
                     <div className="row">
                         <div className="col-xl-8 col-lg-7">
                             <div className="ticket-detail-head">
                                 <div className="row">
+                                <div className="col-xxl-3 col-md-6">
+                                        <div className="ticket-head-card">
+                                            <span className="ticket-detail-icon">
+                                                <i className="la la-stop-circle" />
+                                            </span>
+                                            <div className="detail-info">
+                                                <h6>User Id</h6>
+                                                <span className="badge badge-soft-warning">
+                                                    {user.id}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="col-xxl-3 col-md-6">
                                         <div className="ticket-head-card">
                                             <span className="ticket-detail-icon">
@@ -99,19 +124,6 @@ const UsersDetails = () => {
                                     </div>
                                     <div className="col-xxl-3 col-md-6">
                                         <div className="ticket-head-card">
-                                            <span className="ticket-detail-icon bg-warning-lights">
-                                                <i className="la la-calendar" />
-                                            </span>
-                                            <div className="detail-info info-two">
-                                                <h6>Created Date</h6>
-                                                <span>
-                                                    {user.created_at}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-xxl-3 col-md-6">
-                                        <div className="ticket-head-card">
                                             <span className="ticket-detail-icon bg-purple-lights">
                                                 <i className="la la-info-circle" />
                                             </span>
@@ -132,6 +144,26 @@ const UsersDetails = () => {
                                                 <h6>Role</h6>
                                                 <span>
                                                     {user.role}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-xxl-3 col-md-6">
+                                        <div className="ticket-head-card">
+                                            <span className="ticket-detail-icon bg-warning-lights">
+                                                <i className="la la-calendar" />
+                                            </span>
+                                            <div className="detail-info info-two">
+                                                <h6>Created Date</h6>
+                                                <span>
+                                                {new Date(user.created_at).toLocaleString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: 'numeric',
+                                                    hour12: true
+                                                })}
                                                 </span>
                                             </div>
                                         </div>

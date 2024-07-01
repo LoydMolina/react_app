@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Select from "react-select";
+import axios from "axios";
 
 const AddUserModal = () => {
-  const [setSelectedOption] = useState(null);
-  const [setSelectedOptionTwo] = useState(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState(null);
+  const [company, setCompany] = useState(null);
+  const [employeeId, setEmployeeId] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [formErrors, setFormErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const customStyles = {
     option: (provided, state) => ({
@@ -15,299 +27,185 @@ const AddUserModal = () => {
       },
     }),
   };
-  const optionsTwo = [
-    { value: 1, label: "Select Company" },
-    { value: 2, label: "Global Technologies" },
-    { value: 3, label: "Delta Infotech" },
+
+  const roleOptions = [
+    { value: "Admin", label: "Admin" },
+    { value: "Employee", label: "Employee" },
   ];
-  const options = [
-    { value: 1, label: "Admin" },
-    { value: 2, label: "Client" },
-    { value: 3, label: "Employee" },
-  ];
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await axios.get("https://wd79p.com/backend/public/api/companies");
+        setCompanies(response.data);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 8;
+  };
+
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+
+    const errors = {};
+    if (!firstName.trim()) {
+      errors.firstName = "First Name is required";
+    }
+    if (!lastName.trim()) {
+      errors.lastName = "Last Name is required";
+    }
+    if (!displayName.trim()) {
+      errors.displayName = "Display Name is required";
+    }
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!validateEmail(email)) {
+      errors.email = "Invalid email format";
+    }
+    if (!password.trim()) {
+      errors.password = "Password is required";
+    } else if (!validatePassword(password)) {
+      errors.password = "Password must be at least 8 characters long";
+    }
+    if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+    if (!phone.trim()) {
+      errors.phone = "Phone is required";
+    }
+    if (!role) {
+      errors.role = "Role is required";
+    }
+    if (!company) {
+      errors.company = "Company is required";
+    }
+    if (!employeeId.trim()) {
+      errors.employeeId = "Employee ID is required";
+    }
+
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setSubmitting(false);
+      return;
+    }
+
+
+    setFormErrors({});
+
+
+    const userData = {
+      first_name: firstName,
+      last_name: lastName,
+      username: displayName,
+      email,
+      password,
+      password_confirmation: confirmPassword,
+      phone,
+      role: role ? role.value : null,
+      company_id: company ? company.value : null,
+      employee_id: employeeId,
+    };
+
+    try {
+      const response = await axios.post("https://wd79p.com/backend/public/api/users", userData);
+      console.log("User added successfully:", response.data);
+      setFirstName("");
+      setLastName("");
+      setDisplayName("");
+      setEmail("");
+      setPassword("");
+      setPhone("");
+      setRole(null);
+      setCompany(null);
+      setEmployeeId("");
+    } catch (error) {
+      console.error("There was an error adding the user:", error);
+      if (error.response && error.response.data) {
+        console.error("Response data:", error.response.data);
+        setFormErrors(error.response.data.errors || {});
+      } else {
+        alert("There was an error adding the user. Please try again later.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }, [firstName, lastName, displayName, email, password, confirmPassword, phone, role, company, employeeId]);
+
+  const handleInputChange = (setter) => (e) => setter(e.target.value);
+
+  const formField = (label, type, value, setter, error) => (
+    <div className="col-sm-6">
+      <div className="input-block mb-3">
+        <label className="col-form-label">
+          {label} {type !== "select" && <span className="text-danger">*</span>}
+        </label>
+        {type === "select" ? (
+          <Select
+            placeholder={`--Select ${label}--`}
+            value={value}
+            onChange={setter}
+            options={type === "select" && label === "Role" ? roleOptions : companies.map(company => ({ value: company.id, label: company.name }))}
+            className={`select floating ${error ? "is-invalid" : ""}`}
+            styles={customStyles}
+          />
+        ) : (
+          <input
+            className={`form-control ${error ? "is-invalid" : ""}`}
+            type={type}
+            value={value}
+            onChange={handleInputChange(setter)}
+          />
+        )}
+        {error && <div className="invalid-feedback">{error}</div>}
+      </div>
+    </div>
+  );
+
   return (
     <div id="add_user" className="modal custom-modal fade" role="dialog">
-      <div
-        className="modal-dialog modal-dialog-centered modal-lg"
-        role="document"
-      >
+      <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Add User</h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            >
+            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">×</span>
             </button>
           </div>
           <div className="modal-body">
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="row">
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">
-                      First Name <span className="text-danger">*</span>
-                    </label>
-                    <input className="form-control" type="text" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">Last Name</label>
-                    <input className="form-control" type="text" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">
-                      Username <span className="text-danger">*</span>
-                    </label>
-                    <input className="form-control" type="text" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">
-                      Email <span className="text-danger">*</span>
-                    </label>
-                    <input className="form-control" type="email" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">Password</label>
-                    <input className="form-control" type="password" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">Confirm Password</label>
-                    <input className="form-control" type="password" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">Phone </label>
-                    <input className="form-control" type="text" />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">Role</label>
-                    <Select
-                      placeholder="Admin"
-                      onChange={setSelectedOption}
-                      options={options}
-                      className="select floating"
-                      styles={customStyles}
-                    />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">Company</label>
-                    <Select
-                      placeholder="Global Technologies"
-                      onChange={setSelectedOptionTwo}
-                      options={optionsTwo}
-                      className="select floating"
-                      styles={customStyles}
-                    />
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="input-block mb-3">
-                    <label className="col-form-label">
-                      Employee ID <span className="text-danger">*</span>
-                    </label>
-                    <input type="text" className="form-control floating" />
-                  </div>
-                </div>
-              </div>
-              <div className="table-responsive m-t-15">
-                <table className="table table-striped custom-table">
-                  <thead>
-                    <tr>
-                      <th>Module Permission</th>
-                      <th className="text-center">Read</th>
-                      <th className="text-center">Write</th>
-                      <th className="text-center">Create</th>
-                      <th className="text-center">Delete</th>
-                      <th className="text-center">Import</th>
-                      <th className="text-center">Export</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Employee</td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Holidays</td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Leaves</td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Events</td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                      <td className="text-center">
-                        <label className="custom_check">
-                          <input type="checkbox" defaultChecked />
-                          <span className="checkmark" />
-                        </label>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                {formField("First Name", "text", firstName, setFirstName, formErrors.firstName)}
+                {formField("Last Name", "text", lastName, setLastName, formErrors.lastName)}
+                {formField("Display Name", "text", displayName, setDisplayName, formErrors.displayName)}
+                {formField("Email", "email", email, setEmail, formErrors.email)}
+                {formField("Password", "password", password, setPassword, formErrors.password)}
+                {formField("Confirm Password", "password", confirmPassword, setConfirmPassword, formErrors.confirmPassword)}
+                {formField("Phone", "text", phone, setPhone, formErrors.phone)}
+                {formField("Role", "select", role, setRole, formErrors.role)}
+                {formField("Company", "select", company, setCompany, formErrors.company)}
+                {formField("Employee ID", "text", employeeId, setEmployeeId, formErrors.employeeId)}
               </div>
               <div className="submit-section">
                 <button
                   className="btn btn-primary submit-btn"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  type="reset"
+                  type="submit"
+                  disabled={submitting}
                 >
-                  Submit
+                  {submitting ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </form>

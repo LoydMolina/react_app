@@ -5,7 +5,7 @@ import axios from 'axios';
 const { Option } = Select;
 
 const EditTicket = ({ visible, onClose, onSave, ticket, staffs, companies }) => {
-  const [form] = Form.useForm();
+const [form] = Form.useForm();
 
   useEffect(() => {
     if (ticket) {
@@ -20,7 +20,7 @@ const EditTicket = ({ visible, onClose, onSave, ticket, staffs, companies }) => 
       const values = await form.validateFields();
       const updatedTicket = { ...ticket, ...values };
 
-      console.log('Updated Ticket Data:', updatedTicket); // Log data before sending the request
+      console.log('Updated Ticket Data:', updatedTicket); 
 
       const response = await axios.put(`https://wd79p.com/backend/public/api/tickets/${ticket.id}`, updatedTicket);
       onSave(response.data);

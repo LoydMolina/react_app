@@ -78,7 +78,7 @@ const TicketDetails = () => {
                                 <i className="las la-arrow-left" /> Back
                             </Link>
                             </div>
-                        </div>
+                            </div>
                         </div>
                     </div>
                     <hr />
@@ -184,7 +184,7 @@ const TicketDetails = () => {
                             </div>
                             <div class="reply">
                             <textarea id="replyTextArea" rows="4" style={{ width: '100%' }} placeholder="Type your reply here..."></textarea>
-                            <button type="button" style={{ backgroundColor: '#FFCC80' }}>Reply</button>
+                            <button type="button" style={{ backgroundColor: '#FF902F' }}>Reply</button>
                             </div>
                         </div>
                         <div className="col-xl-4 col-lg-5 theiaStickySidebar">

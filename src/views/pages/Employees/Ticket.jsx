@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Table } from "antd";
 import moment from 'moment';
@@ -16,6 +16,8 @@ const Ticket = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [filters, setFilters] = useState({});
   const [tickets, setTickets] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('https://wd79p.com/backend/public/api/tickets')
@@ -121,6 +123,10 @@ const Ticket = () => {
     });
   };
 
+  const handleRowClick = (record) => {
+    navigate(`/ticket-details/${record.id}`, { state: { ticket: record } });
+  };
+
   const filteredData = applyFilters(mergedData);
 
   const columns = [
@@ -195,7 +201,7 @@ const Ticket = () => {
       title: "Priority",
       dataIndex: "priority",
       render: (priority, record) => (
-        <div className="dropdown action-label">
+        <div className="dropdown action-label" onClick={(e) => e.stopPropagation()}>
           <Link
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
             to="#"
@@ -229,7 +235,7 @@ const Ticket = () => {
       title: "Status",
       dataIndex: "status",
       render: (status, record) => (
-        <div className="dropdown action-label text-center">
+        <div className="dropdown action-label text-center" onClick={(e) => e.stopPropagation()}>
           <Link
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
             to="#"
@@ -271,7 +277,7 @@ const Ticket = () => {
     {
       title: "Action",
       render: (text, record) => (
-        <div className="dropdown dropdown-action text-end">
+        <div className="dropdown dropdown-action text-end" onClick={(e) => e.stopPropagation()}>
           <Link
             to="#"
             className="action-icon dropdown-toggle"
@@ -346,6 +352,11 @@ const Ticket = () => {
                   style={{ overflowX: "auto" }}
                   columns={columns}
                   dataSource={filteredData}
+                  onRow={(record) => ({
+                    onClick: () => handleRowClick(record),
+                    style: { cursor: 'pointer' },
+                    className: 'table-row-hover'
+                  })}
                 />
               </div>
             </div>
