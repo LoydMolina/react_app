@@ -72,7 +72,7 @@ const Ticket = () => {
 
   const mergedData = data.map(item => {
     const company = companies.find(c => c.id === item.company_id);
-    const staff = staffs.find(c => c.id === item.assign_staff);
+    const staff = staffs.find(c => c.user_id === item.assign_staff);
     return {
       ...item,
       companyName: company ? company.name : '--',

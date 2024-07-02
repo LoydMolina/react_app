@@ -29,6 +29,7 @@ const AddUserModal = () => {
   };
 
   const roleOptions = [
+    { value: "", label: "--Select Role--" },
     { value: "Admin", label: "Admin" },
     { value: "Employee", label: "Employee" },
   ];
@@ -58,7 +59,6 @@ const AddUserModal = () => {
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setSubmitting(true);
-
 
     const errors = {};
     if (!firstName.trim()) {
@@ -96,16 +96,13 @@ const AddUserModal = () => {
       errors.employeeId = "Employee ID is required";
     }
 
-
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       setSubmitting(false);
       return;
     }
 
-
     setFormErrors({});
-
 
     const userData = {
       first_name: firstName,
@@ -115,8 +112,8 @@ const AddUserModal = () => {
       password,
       password_confirmation: confirmPassword,
       phone,
-      role: role ? role.value : null,
-      company_id: company ? company.value : null,
+      role: role ? role.value : "N/A",
+      company_id: company ? company.value : "N/A",
       employee_id: employeeId,
     };
 
@@ -128,10 +125,12 @@ const AddUserModal = () => {
       setDisplayName("");
       setEmail("");
       setPassword("");
+      setConfirmPassword("");
       setPhone("");
       setRole(null);
       setCompany(null);
       setEmployeeId("");
+      document.getElementById("closeAddUserModalButton").click();
     } catch (error) {
       console.error("There was an error adding the user:", error);
       if (error.response && error.response.data) {
@@ -158,7 +157,7 @@ const AddUserModal = () => {
             placeholder={`--Select ${label}--`}
             value={value}
             onChange={setter}
-            options={type === "select" && label === "Role" ? roleOptions : companies.map(company => ({ value: company.id, label: company.name }))}
+            options={type === "select" && label === "Role" ? roleOptions : [{ value: "", label: "--Select Company--" }, ...companies.map(company => ({ value: company.id, label: company.name }))]}
             className={`select floating ${error ? "is-invalid" : ""}`}
             styles={customStyles}
           />
@@ -181,7 +180,7 @@ const AddUserModal = () => {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Add User</h5>
-            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <button id="closeAddUserModalButton" type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">×</span>
             </button>
           </div>

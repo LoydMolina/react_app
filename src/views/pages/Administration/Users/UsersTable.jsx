@@ -11,27 +11,27 @@ const UsersTable = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editUser, setEditUser] = useState(null); // State to manage edited user
+  const [editUser, setEditUser] = useState(null); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [primaryResponse, companyResponse] = await Promise.all([
-          axios.get('https://wd79p.com/backend/public/api/users'),
-          axios.get('https://wd79p.com/backend/public/api/companies')
-        ]);
-        setData(primaryResponse.data);
-        setCompanies(companyResponse.data);
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const [primaryResponse, companyResponse] = await Promise.all([
+        axios.get('https://wd79p.com/backend/public/api/users'),
+        axios.get('https://wd79p.com/backend/public/api/companies')
+      ]);
+      setData(primaryResponse.data);
+      setCompanies(companyResponse.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+      setLoading(false);
+    }
+  };
 
   const mergedData = data.map(item => {
     const company = companies.find(c => c.id === item.company_id);
@@ -44,44 +44,44 @@ const UsersTable = () => {
   const deleteUser = async (userId) => {
     try {
       await axios.delete(`https://wd79p.com/backend/public/api/users/${userId}`);
-      setData(data.filter(user => user.id !== userId));
+      setData(data.filter(user => user.user_id !== userId)); 
     } catch (error) {
       console.error("There was an error deleting the user!", error);
     }
   };
 
   const handleRowClick = (record) => {
-    navigate(`/users-details/${record.id}`, { state: { user: record } });
+    navigate(`/users-details/${record.user_id}`, { state: { user: record } }); 
   };
 
   const handleEditUser = (record) => {
-    setEditUser(record); // Set the user to edit
+    setEditUser(record); 
   };
 
-  const handleSaveUser = (updatedUser) => {
-    const updatedData = data.map(user =>
-      user.id === updatedUser.id ? updatedUser : user
-    );
-    setData(updatedData);
-    setEditUser(null); // Close the edit modal after save
+  const handleSaveUser = async (updatedUser) => {
+    try {
+      await fetchData();
+      setEditUser(null); 
+    } catch (error) {
+      console.error("There was an error saving the user!", error);
+    }
   };
   
   const columns = [
     { 
       title: "Id",
-      dataIndex: "id",
+      dataIndex: "user_id", 
       render: (text, record) => (
         <Link
           onClick={() => localStorage.setItem("minheight", "true")}
           to={{
-            pathname: `/users-details/${record.id}`,
+            pathname: `/users-details/${record.user_id}`, 
             state: { user: record }
           }}
         >
-          {record.id}
+          {record.user_id} 
         </Link>
       ),
-      sorter: (a, b) => a.id - b.id,
     }, 
     {
       title: "Employee Id",
@@ -143,7 +143,7 @@ const UsersTable = () => {
             <Link
               className="dropdown-item"
               to="#"
-              onClick={() => handleEditUser(record)} // Open EditUserModal
+              onClick={() => handleEditUser(record)}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </Link>
@@ -172,7 +172,7 @@ const UsersTable = () => {
         <div className="table-responsive">
           <Table
             className="table-striped"
-            rowKey={(record) => record.id}
+            rowKey={(record) => record.user_id} 
             style={{ overflowX: "auto" }}
             columns={columns}
             dataSource={mergedData}
@@ -193,10 +193,10 @@ const UsersTable = () => {
           )}
           {userToDelete && (
             <DeleteModal
-              Name={`User #${userToDelete.id}`}
+              Name={`User #${userToDelete.user_id}`} 
               deleteAction={() => {
                 if (userToDelete) {
-                  deleteUser(userToDelete.id);
+                  deleteUser(userToDelete.user_id); 
                   setUserToDelete(null);
                 }
               }}
