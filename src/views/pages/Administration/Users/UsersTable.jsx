@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Table } from "antd";
+import { Table, Input } from "antd";
 import EditUseModal from "../../../../components/Administration/Users/EditUseModal";
 import DeleteModal from "../../../../components/modelpopup/deletePopup";
 
@@ -11,7 +11,8 @@ const UsersTable = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editUser, setEditUser] = useState(null); 
+  const [editUser, setEditUser] = useState(null);
+  const [filterText, setFilterText] = useState(""); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,13 +34,32 @@ const UsersTable = () => {
     }
   };
 
+  const displayValue = (value) => {
+    return value ? value : "--";
+  };
+
   const mergedData = data.map(item => {
     const company = companies.find(c => c.id === item.company_id);
     return {
       ...item,
-      companyName: company ? company.name : '--',
+      companyName: displayValue(company ? company.name : "--"),
+      first_name: displayValue(item.first_name),
+      last_name: displayValue(item.last_name),
+      employee_id: displayValue(item.employee_id),
+      phone: displayValue(item.phone),
+      role: displayValue(item.role),
+      created_at: displayValue(item.created_at)
     };
   });
+
+  const filteredData = mergedData.filter(item => 
+    (item.first_name && item.first_name.toLowerCase().includes(filterText.toLowerCase())) ||
+    (item.last_name && item.last_name.toLowerCase().includes(filterText.toLowerCase())) ||
+    (item.employee_id && item.employee_id.toLowerCase().includes(filterText.toLowerCase())) ||
+    (item.phone && item.phone.toLowerCase().includes(filterText.toLowerCase())) ||
+    (item.role && item.role.toLowerCase().includes(filterText.toLowerCase())) ||
+    (item.companyName && item.companyName.toLowerCase().includes(filterText.toLowerCase()))
+  );
 
   const deleteUser = async (userId) => {
     try {
@@ -68,21 +88,6 @@ const UsersTable = () => {
   };
   
   const columns = [
-    { 
-      title: "Id",
-      dataIndex: "user_id", 
-      render: (text, record) => (
-        <Link
-          onClick={() => localStorage.setItem("minheight", "true")}
-          to={{
-            pathname: `/users-details/${record.user_id}`, 
-            state: { user: record }
-          }}
-        >
-          {record.user_id} 
-        </Link>
-      ),
-    }, 
     {
       title: "Employee Id",
       dataIndex: "employee_id",
@@ -170,12 +175,18 @@ const UsersTable = () => {
     <div className="row">
       <div className="col-md-12">
         <div className="table-responsive">
+          <Input
+            placeholder="Search users"
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            style={{ marginBottom: 16 }}
+          />
           <Table
             className="table-striped"
             rowKey={(record) => record.user_id} 
             style={{ overflowX: "auto" }}
             columns={columns}
-            dataSource={mergedData}
+            dataSource={filteredData}
             onRow={(record) => ({
               onClick: () => handleRowClick(record),
               style: { cursor: 'pointer' },

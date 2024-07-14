@@ -42,7 +42,7 @@ const fetchCompanies = async () => {
 
       console.log('Updated User Data:', updatedUser); 
 
-      const response = await axios.put(`https://wd79p.com/backend/public/api/users/${user.id}`, updatedUser);
+      const response = await axios.put(`https://wd79p.com/backend/public/api/users/${user.user_id}`, updatedUser);
       onSave(updatedUser);
       onClose();
       message.success('User updated successfully');

@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { createTicket, updateTicket } from '../../apiService';
 import axios from 'axios';
+import { useAuth } from '../../AuthContext';
+import { createTicket, updateTicket } from '../../apiService';
 
 const TicketModelPopup = ({ ticket, onSave }) => {
+  const { authState } = useAuth();
+  const userId = authState.user_id;
+
   const [errors, setErrors] = useState({});
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [fileError, setFileError] = useState('');
 
   const initialFormData = {
@@ -18,8 +22,8 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     priority: '',
     cc: '',
     description: '',
-    file: '',
-    user_id: '',
+    files: [],
+    user_id: userId,
     to_email: '',
     message_id: '',
     created_at: '',
@@ -56,33 +60,33 @@ const TicketModelPopup = ({ ticket, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'assign_staff') {
-      const selectedUser = users.find(user => user.user_id.toString() === value);
-      setFormData({
-        ...formData,
-        assign_staff: selectedUser ? selectedUser.user_id : '', 
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      if (selectedFile.size > 10485760) { 
+    const selectedFiles = Array.from(e.target.files);
+    const newFiles = [...files];
+
+    selectedFiles.forEach((file) => {
+      if (file.size > 10485760) {
         setFileError('File size exceeds limit (10MB)');
-        setFile(null);
       } else {
-        setFile(selectedFile);
-        setFileError('');
+        newFiles.push(file);
       }
-    } else {
-      setFile(null);
-    }
+    });
+
+    setFiles(newFiles);
+    setFileError('');
+  };
+
+  const removeFile = (index) => {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    setFiles(newFiles);
+    setFileError('');
   };
 
   const validate = () => {
@@ -115,41 +119,37 @@ const TicketModelPopup = ({ ticket, onSave }) => {
       setLoading(false);
       return;
     }
-    try {
-      let fileData = '';
-      if (file) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-          fileData = reader.result.split(',')[1]; 
-          submitForm(fileData);
-        };
-      } else {
-        submitForm(fileData);
-      }
-    } catch (error) {
-      console.error('Error saving ticket:', error.response ? error.response.data : error.message);
-      if (error.response && error.response.data && error.response.data.errors) {
-        setErrors({ submit: error.response.data.errors });
-      } else {
-        setErrors({ submit: { general: 'An error occurred. Please try again later.' } });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const submitForm = async (fileData) => {
     try {
-      const formDataWithFile = { ...formData, file: fileData };
+      const formDataToSend = new FormData();
+
+      formDataToSend.append('subject', formData.subject);
+      formDataToSend.append('company_id', formData.company_id);
+      formDataToSend.append('assign_staff', formData.assign_staff);
+      formDataToSend.append('priority', formData.priority);
+      formDataToSend.append('cc', formData.cc);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('user_id', userId);
+      formDataToSend.append('to_email', formData.to_email);
+      formDataToSend.append('status', formData.status);
+
+      files.forEach((file, index) => {
+        formDataToSend.append(`files[${index}]`, file);
+      });
+
+      console.log('Files:', files);
+      console.log('FormData:', ...formDataToSend);
+
       if (formData.id) {
-        await updateTicket(formData.id, formDataWithFile);
+        await updateTicket(formData.id, formDataToSend);
       } else {
-        await createTicket(formDataWithFile);
+        await createTicket(formDataToSend);
       }
+
       onSave();
       setFormData(initialFormData);
-      setFile(null);
+      setFiles([]);
+
       const closeModalButton = document.querySelector('#add_ticket .btn-close');
       if (closeModalButton) {
         closeModalButton.click();
@@ -170,6 +170,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     const closeModalHandler = () => {
       setFormData(initialFormData);
       setErrors({});
+      setFiles([]);
     };
 
     const modalElement = document.getElementById('add_ticket');
@@ -236,6 +237,17 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                 {errors.assign_staff && <div className="text-danger">{errors.assign_staff}</div>}
               </div>
               <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  className={`form-control ${errors.to_email ? 'is-invalid' : ''}`}
+                  name="to_email"
+                  value={formData.to_email}
+                  onChange={handleChange}
+                />
+                {errors.to_email && <div className="text-danger">{errors.to_email}</div>}
+              </div>
+              <div className="form-group">
                 <label>Cc</label>
                 <input
                   type="text"
@@ -254,28 +266,34 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                   value={formData.priority}
                   onChange={handleChange}
                 >
-                  <option value="Emergency">Emergency</option>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
+                  <option value="">--Select Priority--</option>
                   <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Emergency">Emergency</option>
                 </select>
                 {errors.priority && <div className="text-danger">{errors.priority}</div>}
               </div>
               <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  className={`form-control ${errors.to_email ? 'is-invalid' : ''}`}
-                  name="to_email"
-                  value={formData.to_email}
+                <label>Status</label>
+                <select
+                  className={`form-control ${errors.status ? 'is-invalid' : ''}`}
+                  name="status"
+                  value={formData.status}
                   onChange={handleChange}
-                />
-                {errors.to_email && <div className="text-danger">{errors.to_email}</div>}
+                >
+                  <option value="">--Select Status--</option>
+                  <option value="New">New</option>
+                  <option value="Open">Open</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Closed">Closed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                {errors.status && <div className="text-danger">{errors.status}</div>}
               </div>
               <div className="form-group">
                 <label>Description</label>
-                <input
-                  type="text"
+                <textarea
                   className={`form-control ${errors.description ? 'is-invalid' : ''}`}
                   name="description"
                   value={formData.description}
@@ -283,33 +301,35 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                 />
                 {errors.description && <div className="text-danger">{errors.description}</div>}
               </div>
-              
-              {errors.submit && (
-                <div className="text-danger">
-                  {Object.entries(errors.submit).map(([field, messages]) => (
-                    <div key={field}>
-                      {field}: {Array.isArray(messages) ? messages.join(', ') : messages}
-                    </div>
-                  ))}
-                </div>
-              )}
-                <div className="form-group">
-                <label>Attachment</label>
+              <div className="form-group">
+                <label>Attach Files</label>
                 <input
                   type="file"
-                  className={`form-control-file ${fileError ? 'is-invalid' : ''}`}
+                  className="form-control"
+                  name="files"
                   onChange={handleFileChange}
+                  multiple
                 />
                 {fileError && <div className="text-danger">{fileError}</div>}
+                <ul>
+                  {files.map((file, index) => (
+                    <li key={index}>
+                      {file.name}
+                      <button type="button" className="btn btn-sm btn-danger" onClick={() => removeFile(index)}>
+                          <i className="bi bi-x">Remove</i>
+                        </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
-                  Close
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? 'Saving...' : 'Save'}
-                </button>
-              </div>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Saving...' : formData.id ? 'Update Ticket' : 'Add Ticket'}
+              </button>
+              {errors.submit && (
+                <div className="text-danger mt-3">
+                  {errors.submit.general || Object.values(errors.submit).join(', ')}
+                </div>
+              )}
             </form>
           </div>
         </div>

@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 // import CompaniesDetailModal from '../../../components/modelpopup/CompaniesDetailModal';
 // import CompanyEditModal from '../../../components/modelpopup/Crm/CompanyEditModal';
-import ContactUser from './ContactUser';
-import ContactSidebar from './ContactSidebar';
+import CompanyUser from './CompanyUser';
 import ContactTabs from './ContactTabs';
 import axios from 'axios';
+import CompanySidebar from './CompanySidebar';
 
 const CompanyDetails = ({ company, onBack }) => {
     const optionsSortValue = [
@@ -96,8 +96,8 @@ const CompanyDetails = ({ company, onBack }) => {
                 </div>
                 <hr />
                 <div className="row">
-                    <ContactUser company={company} />
-                    <ContactSidebar company={company} />
+                    <CompanyUser company={company} />
+                    <CompanySidebar company={company} />
                     <ContactTabs optionsSortValue={optionsSortValue} customStyles={customStyles} company={company} activities={activities} />
                 </div>
             </div>

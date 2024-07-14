@@ -1,93 +1,64 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import Select from "react-select";
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Select, Button, message } from 'antd';
+import axios from 'axios';
 
-const UserFilter = () => {
-  const [setSelectedOption] = useState(null);
-  const [setSelectedOptionTwo] = useState(null);
+const { Option } = Select;
 
-  const [itemFocus, setItemFocus] = useState(false);
+const UserFilter = ({ onFilterChange }) => {
+  const [form] = Form.useForm();
+  const [users, setUsers] = useState([]);
+  
+  // Fetch users data from the API
+  useEffect(() => {
+    axios.get('https://wd79p.com/backend/public/api/users')
+      .then(response => {
+        setUsers(response.data);
+      })
+      .catch(error => {
+        message.error('Failed to fetch users data');
+        console.error('Error fetching users data:', error);
+      });
+  }, []);
 
-  const inputFocus = () => {
-    setItemFocus(true);
+  const handleFinish = (values) => {
+    onFilterChange(values);
   };
 
-  const inputBlur = () => {
-    setItemFocus(false);
-  };
-
-  const customStyles = {
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused ? "#ff9b44" : "#fff",
-      color: state.isFocused ? "#fff" : "#000",
-      "&:hover": {
-        backgroundColor: "#ff9b44",
-      },
-    }),
-  };
-  const options = [
-    { value: 1, label: "Select Company" },
-    { value: 2, label: "Global Technologies" },
-    { value: 3, label: "Delta Infotech" },
-  ];
-  const optionsTwo = [
-    { value: 1, label: "Select Role" },
-    { value: 2, label: "Web Developer" },
-    { value: 3, label: "Web Designer" },
-    { value: 4, label: "Andriod Developer" },
-    { value: 5, label: "IOS Developer" },
-  ];
   return (
-    <div className="row filter-row space">
-      <div className="col-sm-6 col-md-3">
-        <div
-          className={`input-block mb-3 form-focus  ${
-            itemFocus ? "focused" : ""
-          } `}
-        >
-          <input
-            type="text"
-            className="form-control floating"
-            onFocus={inputFocus}
-            onBlur={inputBlur}
-          />
-          <label className="focus-label">Name</label>
-        </div>
-      </div>
-
-      <div className="col-sm-6 col-md-3">
-        <div className="input-block form-focus select-focus">
-          <Select
-            placeholder="Select Company"
-            onChange={setSelectedOption}
-            options={options}
-            className="select floating"
-            styles={customStyles}
-          />
-          <label className="focus-label">Company</label>
-        </div>
-      </div>
-      <div className="col-sm-6 col-md-3">
-        <div className="input-block form-focus select-focus">
-          <Select
-            placeholder="Select Role"
-            onChange={setSelectedOptionTwo}
-            options={optionsTwo}
-            className="select floating"
-            styles={customStyles}
-          />
-          <label className="focus-label">Role</label>
-        </div>
-      </div>
-
-      <div className="col-sm-6 col-md-3">
-        <Link to="#" className="btn btn-success btn-block w-100">
-          {" "}
-          Search{" "}
-        </Link>
-      </div>
-    </div>
+    <Form form={form} layout="inline" onFinish={handleFinish} className="user-filter-form">
+      <Form.Item name="user_id">
+        <Select placeholder="User Id" allowClear>
+          {users.map(user => (
+            <Option key={user.user_id} value={user.user_id}>{user.user_id}</Option>
+          ))}
+        </Select>
+      </Form.Item>
+      <Form.Item name="employee_id">
+        <Input placeholder="Employee Id" />
+      </Form.Item>
+      <Form.Item name="companyName">
+        <Input placeholder="Company" />
+      </Form.Item>
+      <Form.Item name="priority">
+        <Select placeholder="Priority" allowClear>
+          <Option value="Emergency">Emergency</Option>
+          <Option value="High">High</Option>
+          <Option value="Medium">Medium</Option>
+          <Option value="Low">Low</Option>
+        </Select>
+      </Form.Item>
+      <Form.Item name="role">
+        <Select placeholder="Role" allowClear>
+          <Option value="Admin">Admin</Option>
+          <Option value="Employee">Employee</Option>
+        </Select>
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" style={{ backgroundColor: '#FFA500', borderColor: '#FFA500' }}>
+          Search
+        </Button>
+      </Form.Item>
+    </Form>
   );
 };
 

@@ -78,9 +78,9 @@ const UsersDetails = () => {
                                                 <i className="la la-stop-circle" />
                                             </span>
                                             <div className="detail-info">
-                                                <h6>User Id</h6>
+                                                <h6>Employee Id</h6>
                                                 <span className="badge badge-soft-warning">
-                                                    {user.id}
+                                                    {user.employee_id}
                                                 </span>
                                             </div>
                                         </div>

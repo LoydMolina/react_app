@@ -1,5 +1,4 @@
-// AppRouter.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import AppContainer from "../Appcontainer";
 import store from "../../store";
@@ -47,11 +46,12 @@ import Breadcrumb from "../../views/pages/Ui_Interface/Components/Breadcrumb";
 import Colors from "../../views/pages/Ui_Interface/Components/colors";
 import UiModals from "../../views/pages/Ui_Interface/Components/uimodals";
 import Spinner from "../../views/pages/Ui_Interface/Components/Spinner";
-import Tooltips from "../../views/pages/Ui_Interface/Components/Tooltip";
+// import Tooltips from "../../views/pages/Ui_Interface/Components/Tooltip";
 import ComingSoon from "../../views/pages/Pages/ComingSoon";
 import UnderManitenance from "../../views/pages/Pages/UnderManitenance";
 import { AuthProvider } from "../../AuthContext";
 import ProtectedRoute from "../../ProtectedRoute";
+import PublicRoute from "../PublicRoute";
 
 const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -64,9 +64,31 @@ const ScrollToTop = () => {
 };
 
 const AppRouter = () => {
+    const isTabClosed = useRef(true);
+
     useEffect(() => {
-        localStorage.setItem("email", "");
-        localStorage.setItem("password", "");
+        const handleUnload = () => {
+            if (isTabClosed.current) {
+                sessionStorage.removeItem("email");
+                sessionStorage.removeItem("token");
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                isTabClosed.current = true;
+            } else {
+                isTabClosed.current = false;
+            }
+        };
+
+        window.addEventListener("unload", handleUnload);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener("unload", handleUnload);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, []);
 
     return (
@@ -75,8 +97,16 @@ const AppRouter = () => {
                 <BrowserRouter basename="/">
                     <ScrollToTop />
                     <Routes>
-                        <Route path="/" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
+                        <Route path="/" element={
+                            <PublicRoute>
+                                <Login />
+                            </PublicRoute>
+                        } />
+                        <Route path="/register" element={
+                            <PublicRoute>
+                                <Register />
+                            </PublicRoute>
+                        } />
                         <Route path="/otp" element={<Otp />} />
                         <Route path="/error-404" element={<Error404 />} />
                         <Route path="/error-500" element={<Error500 />} />

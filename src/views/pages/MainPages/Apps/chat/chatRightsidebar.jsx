@@ -1,8 +1,32 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Avatar_02, Avatar_05 } from "../../../../../Routes/ImagePath";
+import AuthContext from "../../../../../AuthContext"; 
+import axios from "axios";
 
 const ChatRightsidebar = () => {
+  const { authState } = useContext(AuthContext); 
+  const id = authState.user_id;
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`https://wd79p.com/backend/public/api/users/${id}`);
+        setUserData(response.data); 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (id) {
+      fetchUserData();
+    }
+  }, [id]);
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <div
@@ -159,36 +183,36 @@ const ChatRightsidebar = () => {
                           <img src={Avatar_02} alt="" />
                           <span className="change-img">Change Image</span>
                         </div>
-                        <h3 className="user-name m-t-10 mb-0">John Doe</h3>
-                        <small className="text-muted">Web Designer</small>
+                        <h3 className="user-name m-t-10 mb-0">{userData.first_name} {userData.last_name}</h3>
+                        <small className="text-muted">{userData.role}</small>
                         <Link to="#" className="btn btn-primary edit-btn">
                           <i className="fa fa-pencil" />
                         </Link>
                       </div>
                       <div className="chat-profile-info">
                         <ul className="user-det-list">
-                          <li>
+                          {/* <li>
                             <span>Username:</span>
                             <span className="float-end text-muted">
                               johndoe
                             </span>
-                          </li>
+                          </li> */}
                           <li>
                             <span>DOB:</span>
                             <span className="float-end text-muted">
-                              24 July
+             
                             </span>
                           </li>
                           <li>
                             <span>Email:</span>
                             <span className="float-end text-muted">
-                              johndoe@example.com
+
                             </span>
                           </li>
                           <li>
                             <span>Phone:</span>
                             <span className="float-end text-muted">
-                              9876543210
+                              {userData.phone}
                             </span>
                           </li>
                         </ul>

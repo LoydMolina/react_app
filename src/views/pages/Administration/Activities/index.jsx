@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import "react-datepicker/dist/react-datepicker.css";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
-import { Table } from 'antd';
+import { Table, Input } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 
 const Activities = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +62,11 @@ const Activities = () => {
     },
   ];
 
+  // Filter data based on exact search term match
+  const filteredData = data.filter(item =>
+    item.subject_id.toString() === searchTerm.trim()
+  );
+
   return (
     <div className="page-wrapper">
       <div className="content container-fluid">
@@ -71,12 +77,17 @@ const Activities = () => {
         />
         <div className="row">
           <div className="col-md-12">
+            <Input
+              placeholder="Search Subject Id"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ marginBottom: 10, width: 200 }}
+            />
             <div className="table-responsive">
               <Table
                 className="table-striped"
                 rowKey={(record) => record.id}
                 columns={columns}
-                dataSource={data}
+                dataSource={searchTerm ? filteredData : data}
                 loading={loading}
               />
             </div>

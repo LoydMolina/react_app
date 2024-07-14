@@ -1,36 +1,31 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
-/* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
+import Select from "react-select";
 import { Applogo } from "../../../Routes/ImagePath";
 import { emailrgx } from "../Authentication/RegEx";
 
-const schema = yup.object({
-  username: yup
-    .string()
-    .required("Username is required")
-    .trim(),
-  email: yup
-    .string()
-    .matches(emailrgx, "Invalid email address")
-    .required("Email is required")
-    .trim(),
-  password: yup
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(20, "Password must be at most 20 characters")
-    .required("Password is required")
-    .trim(),
-  repeatPassword: yup
-    .string()
-    .oneOf([yup.ref("password"), null], "Passwords must match")
-    .required("Repeat password is required")
-    .trim(),
+const schema = yup.object().shape({
+  username: yup.string().required("Username is required").trim(),
+  email: yup.string().matches(emailrgx, "Invalid email address").required("Email is required").trim(),
+  password: yup.string().min(6, "Password must be at least 6 characters").max(20, "Password must be at most 20 characters").required("Password is required").trim(),
+  repeatPassword: yup.string().oneOf([yup.ref("password"), null], "Passwords must match").required("Repeat password is required").trim(),
+  firstName: yup.string().required("First Name is required").trim(),
+  lastName: yup.string().required("Last Name is required").trim(),
+  displayName: yup.string().required("Display Name is required").trim(),
+  phone: yup.string().required("Phone is required").trim(),
+  role: yup.object().shape({
+    value: yup.string().required("Role is required"),
+    label: yup.string().required("Role is required"),
+  }),
+  company: yup.object().shape({
+    value: yup.string().required("Company is required"),
+    label: yup.string().required("Company is required"),
+  }),
+  employeeId: yup.string().required("Employee ID is required").trim(),
 });
 
 const Register = (props) => {
@@ -38,6 +33,14 @@ const Register = (props) => {
   const [repeatPasswordEye, setRepeatPasswordEye] = useState(true);
   const [checkUser, setCheckUser] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState(null);
+  const [company, setCompany] = useState(null);
+  const [employeeId, setEmployeeId] = useState("");
+  const [companies, setCompanies] = useState([]);
 
   const {
     control,
@@ -49,13 +52,34 @@ const Register = (props) => {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await axios.get("https://wd79p.com/backend/public/api/companies");
+        setCompanies(response.data);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post("http://localhost:5000/register", {
+      const userData = {
+        first_name: firstName,
+        last_name: lastName,
         username: data.username,
         email: data.email,
         password: data.password,
-      });
+        phone,
+        role: role ? role.value : "N/A",
+        company_id: company ? company.value : "N/A",
+        employee_id: employeeId,
+      };
+
+      const response = await axios.post("https://wd79p.com/backend/public/api/users", userData);
 
       if (response.status === 201) {
         navigate("/");
@@ -88,21 +112,37 @@ const Register = (props) => {
                 {/* Account Form */}
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="input-block mb-3">
-                    <label className="col-form-label">Username</label>
-                    <Controller
-                      name="username"
-                      control={control}
-                      render={({ field: { value, onChange } }) => (
-                        <input
-                          className={`form-control ${errors?.username ? "error-input" : ""}`}
-                          type="text"
-                          value={value}
-                          onChange={onChange}
-                          autoComplete="off"
-                        />
-                      )}
+                    <label className="col-form-label">First Name</label>
+                    <input
+                      className={`form-control ${errors?.firstName ? "error-input" : ""}`}
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      autoComplete="off"
                     />
-                    <span className="text-danger">{errors?.username?.message}</span>
+                    <span className="text-danger">{errors?.firstName?.message}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Last Name</label>
+                    <input
+                      className={`form-control ${errors?.lastName ? "error-input" : ""}`}
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      autoComplete="off"
+                    />
+                    <span className="text-danger">{errors?.lastName?.message}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Display Name</label>
+                    <input
+                      className={`form-control ${errors?.displayName ? "error-input" : ""}`}
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      autoComplete="off"
+                    />
+                    <span className="text-danger">{errors?.displayName?.message}</span>
                   </div>
                   <div className="input-block mb-3">
                     <label className="col-form-label">Email</label>
@@ -121,6 +161,49 @@ const Register = (props) => {
                     />
                     <span className="text-danger">{errors?.email?.message}</span>
                     <span className="text-danger">{checkUser ? "This email already exists" : ""}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Phone</label>
+                    <input
+                      className={`form-control ${errors?.phone ? "error-input" : ""}`}
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      autoComplete="off"
+                    />
+                    <span className="text-danger">{errors?.phone?.message}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Role</label>
+                    <Select
+                      value={role}
+                      onChange={setRole}
+                      options={[
+                        { value: "Admin", label: "Admin" },
+                        { value: "Employee", label: "Employee" },
+                      ]}
+                    />
+                    <span className="text-danger">{errors?.role?.message}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Company</label>
+                    <Select
+                      value={company}
+                      onChange={setCompany}
+                      options={companies.map(company => ({ value: company.id, label: company.name }))}
+                    />
+                    <span className="text-danger">{errors?.company?.message}</span>
+                  </div>
+                  <div className="input-block mb-3">
+                    <label className="col-form-label">Employee ID</label>
+                    <input
+                      className={`form-control ${errors?.employeeId ? "error-input" : ""}`}
+                      type="text"
+                      value={employeeId}
+                      onChange={(e) => setEmployeeId(e.target.value)}
+                      autoComplete="off"
+                    />
+                    <span className="text-danger">{errors?.employeeId?.message}</span>
                   </div>
                   <div className="input-block mb-3">
                     <label className="col-form-label">Password</label>

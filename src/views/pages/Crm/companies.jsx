@@ -53,11 +53,15 @@ const Companies = () => {
 
   const handleDelete = async () => {
     if (selectedCompany) {
-      await deleteCompany(selectedCompany.id);
-      const updatedCompanies = companies.filter(company => company.id !== selectedCompany.id);
-      setCompanies(updatedCompanies);
-      setFilteredCompanies(updatedCompanies);
-      setSelectedCompany(null);
+      try {
+        await deleteCompany(selectedCompany.id);
+        const updatedCompanies = companies.filter(company => company.id !== selectedCompany.id);
+        setCompanies(updatedCompanies);
+        setFilteredCompanies(updatedCompanies);
+        setSelectedCompany(null);
+      } catch (error) {
+        console.error('Failed to delete company:', error);
+      }
     }
   };
 

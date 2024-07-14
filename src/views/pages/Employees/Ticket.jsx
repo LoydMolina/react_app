@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Table } from "antd";
+import { Table, Button } from "antd";
 import moment from 'moment';
 import DeleteModal from "../../../components/modelpopup/DeleteModal";
 import TicketModelPopup from "../../../components/modelpopup/TicketModelPopup";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import TicketFilter from "../../../components/TicketFilter";
 import EditTicket from "../../../components/modelpopup/EditTicket";
+import MergeModal from "../Employees/MergeModal";
 
 const Ticket = () => {
   const [users, setUsers] = useState([]);
@@ -16,8 +17,34 @@ const Ticket = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [filters, setFilters] = useState({});
   const [tickets, setTickets] = useState([]);
-
+  const [loading, setLoading] = useState(false);
+  const [isMergeModalVisible, setIsMergeModalVisible] = useState(false);
   const navigate = useNavigate();
+
+  const handleMergeModalOpen = () => {
+    setIsMergeModalVisible(true);
+  };
+
+  const handleMergeModalClose = () => {
+    setIsMergeModalVisible(false);
+  };
+
+  const handleMerge = async (ticketId, target_ticket_id) => {
+    console.log('Merging tickets:', { ticketId, target_ticket_id }); 
+    try {
+      const response = await axios.post(`https://wd79p.com/backend/public/api/tickets/${ticketId}/merge`, {
+        target_ticket_id: target_ticket_id
+      });
+      console.log('Merge successful:', response.data);
+  
+      fetchData(); 
+  
+      setIsMergeModalVisible(false); 
+    } catch (error) {
+      console.error('Error merging tickets:', error);
+    }
+  };
+  
 
   useEffect(() => {
     fetch('https://wd79p.com/backend/public/api/tickets')
@@ -56,8 +83,15 @@ const Ticket = () => {
   }, []);
 
   const fetchData = async () => {
-    const primaryResponse = await axios.get('https://wd79p.com/backend/public/api/tickets');
-    setData(primaryResponse.data);
+    setLoading(true);
+    try {
+      const primaryResponse = await axios.get('https://wd79p.com/backend/public/api/tickets');
+      setData(primaryResponse.data.reverse());
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchCompanies = async () => {
@@ -118,7 +152,8 @@ const Ticket = () => {
         (!filters.subject || ticket.subject.toLowerCase().includes(filters.subject.toLowerCase())) &&
         (!filters.companyName || ticket.companyName.toLowerCase().includes(filters.companyName.toLowerCase())) &&
         (!filters.priority || ticket.priority === filters.priority) &&
-        (!filters.status || ticket.status === filters.status)
+        (!filters.status || ticket.status === filters.status) &&
+        (ticket.status !== 'Closed') 
       );
     });
   };
@@ -130,7 +165,7 @@ const Ticket = () => {
   const filteredData = applyFilters(mergedData);
 
   const columns = [
-    { 
+    {
       title: "Ticket Id",
       dataIndex: "id",
       render: (text, record) => (
@@ -144,7 +179,7 @@ const Ticket = () => {
           {record.id}
         </Link>
       ),
-      sorter: (a, b) => a.id.length - b.id.length,
+      sorter: (a, b) => a.id - b.id, 
     },
     {
       title: 'Company Name',
@@ -338,11 +373,17 @@ const Ticket = () => {
             </div>
           ))}
         </div>
+        <MergeModal
+        visible={isMergeModalVisible}
+        onCancel={handleMergeModalClose}
+        onMerge={handleMerge}
+        tickets={tickets}
+      />
+      <Button onClick={handleMergeModalOpen}>Merge Tickets</Button>
       </div>
     </div>
-
           <TicketFilter onFilterChange={handleFilterChange} />
-
+          
           <div className="row">
             <div className="col-md-12">
               <div className="table-responsive">
@@ -352,6 +393,7 @@ const Ticket = () => {
                   style={{ overflowX: "auto" }}
                   columns={columns}
                   dataSource={filteredData}
+                  loading={loading}
                   onRow={(record) => ({
                     onClick: () => handleRowClick(record),
                     style: { cursor: 'pointer' },
@@ -363,6 +405,7 @@ const Ticket = () => {
           </div>
         </div>
       </div>
+
       <TicketModelPopup onSave={refreshTickets}/>
       <DeleteModal
         Name={ticketToDelete ? `Ticket #${ticketToDelete.id}` : 'Delete Ticket'}

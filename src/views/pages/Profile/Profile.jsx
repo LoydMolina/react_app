@@ -1,28 +1,37 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
 import { Avatar_02, Avatar_16 } from "../../../Routes/ImagePath";
 import { Link } from "react-router-dom";
 import ProfileTab from "./ProfileTab";
 import Breadcrumbs from "../../../components/Breadcrumbs";
+import AuthContext from "../../../AuthContext"; 
+import moment from 'moment';
 
 const Profile = () => {
-  const userData = {
-    id: 1,
-    name: "John Doe",
-    role: "UI/UX Design Team",
-    jobTitle: "Web Designer",
-    employeeId: "FT-0001",
-    dateOfJoin: "1st Jan 2023",
-    phone: "9876543210",
-    email: "johndoe@example.com",
-    birthday: "24th July",
-    address: "1861 Bayonne Ave, Manchester Township, NJ, 08759",
-    gender: "Male",
-    supervisor: {
-      name: "Jeffery Lalor",
-      avatar: "assets/img/profiles/avatar-16.jpg",
-    },
-  };
+  const { authState } = useContext(AuthContext); 
+  const id = authState.user_id;
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`https://wd79p.com/backend/public/api/users/${id}`);
+        setUserData(response.data); 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (id) {
+      fetchUserData();
+    }
+  }, [id]);
+
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <div className="page-wrapper">
@@ -51,17 +60,14 @@ const Profile = () => {
                         <div className="col-md-5">
                           <div className="profile-info-left">
                             <h3 className="user-name m-t-0 mb-0">
-                              {userData.name}
+                              {userData.first_name} {userData.last_name}
                             </h3>
                             <h6 className="text-muted">{userData.role}</h6>
-                            <small className="text-muted">
-                              {userData.jobTitle}
-                            </small>
                             <div className="staff-id">
-                              Employee ID : {userData.employeeId}
+                              Employee ID : {userData.employee_id}
                             </div>
                             <div className="small doj text-muted">
-                              Date of Join : {userData.dateOfJoin}
+                              Date of Join : {moment(userData.created_at).format('MMMM DD, YYYY [at] h:mma')}
                             </div>
                             <div className="staff-msg">
                               <Link className="btn btn-custom" to="/call/chat">
@@ -109,7 +115,7 @@ const Profile = () => {
                                   </div>
                                 </div>
                                 <Link to="profile">
-                                  {userData.supervisor.name}
+                                  {userData.supervisor?.name}
                                 </Link>
                               </div>
                             </li>

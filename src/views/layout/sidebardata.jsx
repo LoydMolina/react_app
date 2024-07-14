@@ -91,13 +91,13 @@ export const SidebarData = [
     showAsTab: false,
     separateRoute: false,
     menu: [
-      // {
-      //   menuValue: 'Employees',
-      //   hasSubRoute: true,
-      //   showSubRoute: false,
-      //   route: "#",
-      //   icon: "la la-user",
-      //   subMenus: [
+      {
+        menuValue: 'Employees',
+        hasSubRoute: true,
+        showSubRoute: false,
+        route: "#",
+        icon: "la la-user",
+        subMenus: [
       //     {
       //       menuValue: 'All Employees',
       //       route: "/employees",
@@ -122,10 +122,10 @@ export const SidebarData = [
       //       menuValue: 'Attendance (Admin)',
       //       route: "/adminattendance",
       //     },
-      //     {
-      //       menuValue: 'Attendance (Employee)',
-      //       route: "/attendance-employee",
-      //     },
+          {
+            menuValue: 'Attendance (Employee)',
+            route: "/attendance-employee",
+          },
       //     {
       //       menuValue: 'Departments',
       //       route: "/departments",
@@ -134,10 +134,10 @@ export const SidebarData = [
       //       menuValue: 'Designations',
       //       route: "/designations",
       //     },
-      //     {
-      //       menuValue: 'Timesheet',
-      //       route: "/timesheet",
-      //     },
+          {
+            menuValue: 'Timesheet',
+            route: "/timesheet",
+          },
       //     {
       //       menuValue: 'Shift & Schedule',
       //       route: "/shift-scheduling",
@@ -146,8 +146,8 @@ export const SidebarData = [
       //       menuValue: 'Overtime',
       //       route: "/overtime",
       //     },
-      //   ],
-      // },
+        ],
+      },
       // {
       //   menuValue: 'Clients',
       //   hasSubRoute: false,

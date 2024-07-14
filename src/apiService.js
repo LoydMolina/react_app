@@ -53,42 +53,48 @@ export const deleteCompany = async (id) => {
   }
 };
 
-export const getTicket = async () => {
-    try {
-      const response = await axios.get(TICKET_API);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching ticket:', error);
-      throw error;
-    }
-  };
-
-export const createTicket = async (ticketData) => {
-    try {
-      const response = await axios.post(TICKET_API, ticketData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating tikcet:', error);
-      throw error;
-    }
-  };
-
-export const updateTicket = async (id, ticketData) => {
+export const getTickets = async () => {
   try {
-    const response = await axios.put(`${TICKET_API}/${id}`, ticketData);
+    const response = await axios.get(`${TICKET_API}`);
     return response.data;
   } catch (error) {
-    console.error('Error updating ticket:', error);
+    console.error('Error fetching tickets:', error);
     throw error;
   }
 };
 
-export const deleteTicket = async (id) => {
-    try {
-      const response = await axios.delete(`${TICKET_API}/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error deleting ticket:', error);
-      throw error;
-    }
+export const getTicket = async (id) => {
+  try {
+    const response = await axios.get(`${TICKET_API}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching ticket:', error);
+    throw error;
+  }
+};
+
+  export const createTicket = (data) => {
+    return axios.post(`${TICKET_API}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   };
+  
+  export const updateTicket = (id, data) => {
+    return axios.post(`${TICKET_API}/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  };
+
+export const deleteTicket = async (id) => {
+  try {
+    const response = await axios.delete(`${TICKET_API}${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting ticket:', error);
+    throw error;
+  }
+};

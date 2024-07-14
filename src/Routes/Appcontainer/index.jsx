@@ -860,7 +860,7 @@ const AppContainer = () => {
     },
     {
       id: 126,
-      path: "contact-details",
+      path: "contact-details/:id",
       element: <ContactDetails />,
     },
     {

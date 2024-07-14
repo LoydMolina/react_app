@@ -21,10 +21,12 @@ const CompaniesModal = ({ company, onSave }) => {
     skype: '',
     whatsapp: '',
     instagram: '',
-    status: 'Active'
+    status: 'Active',
+    profile_image: null, // New field for profile image
   });
 
   const [errors, setErrors] = useState({});
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     if (company) {
@@ -49,17 +51,27 @@ const CompaniesModal = ({ company, onSave }) => {
         skype: '',
         whatsapp: '',
         instagram: '',
-        status: 'Active'
+        status: 'Active',
+        profile_image: null,
       });
     }
   }, [company]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    const { name, value, type } = e.target;
+
+    // Handle file input separately
+    if (type === 'file') {
+      setFormData({
+        ...formData,
+        [name]: e.target.files[0], // Assuming single file upload
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const validate = () => {
@@ -94,7 +106,6 @@ const CompaniesModal = ({ company, onSave }) => {
         await createCompany(formData);
       }
       onSave();
-      // Reset form fields
       setFormData({
         id: '',
         name: '',
@@ -114,7 +125,8 @@ const CompaniesModal = ({ company, onSave }) => {
         skype: '',
         whatsapp: '',
         instagram: '',
-        status: 'Active'
+        status: 'Active',
+        profile_image: null,
       });
       // Close modal after save
       const closeModalButton = document.querySelector('#add_company .btn-close');
@@ -221,6 +233,10 @@ const CompaniesModal = ({ company, onSave }) => {
                   <option value="Closed">Closed</option>
                 </select>
                 {errors.status && <div className="text-danger">{errors.status}</div>}
+              </div>
+              <div className="form-group">
+                <label>Profile Image</label>
+                <input type="file" className="form-control-file" name="profile_image" onChange={handleChange} />
               </div>
               {errors.submit && (
                 <div className="text-danger">

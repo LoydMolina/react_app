@@ -17,6 +17,11 @@ const AddUserModal = () => {
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
+  const generateEmployeeId = () => {
+    const randomNumber = Math.floor(Math.random() * 9000) + 1000; // Random number between 1000 and 9999
+    return `SPRK${randomNumber}`;
+  };
+
   const customStyles = {
     option: (provided, state) => ({
       ...provided,
@@ -92,9 +97,9 @@ const AddUserModal = () => {
     if (!company) {
       errors.company = "Company is required";
     }
-    if (!employeeId.trim()) {
-      errors.employeeId = "Employee ID is required";
-    }
+    // if (!employeeId.trim()) {
+    //   errors.employeeId = "Employee ID is required";
+    // }
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -129,7 +134,7 @@ const AddUserModal = () => {
       setPhone("");
       setRole(null);
       setCompany(null);
-      setEmployeeId("");
+      setEmployeeId(generateEmployeeId());
       document.getElementById("closeAddUserModalButton").click();
     } catch (error) {
       console.error("There was an error adding the user:", error);
@@ -196,7 +201,7 @@ const AddUserModal = () => {
                 {formField("Phone", "text", phone, setPhone, formErrors.phone)}
                 {formField("Role", "select", role, setRole, formErrors.role)}
                 {formField("Company", "select", company, setCompany, formErrors.company)}
-                {formField("Employee ID", "text", employeeId, setEmployeeId, formErrors.employeeId)}
+                {("Employee ID", "text", employeeId, setEmployeeId, formErrors.employeeId)}
               </div>
               <div className="submit-section">
                 <button

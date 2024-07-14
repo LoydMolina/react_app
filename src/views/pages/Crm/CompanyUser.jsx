@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Edit, MoreVertical } from 'react-feather';
 
-const ContactUser = ({ company }) => (
+const CompanyUser = ({ company }) => (
     <div className="col-md-12">
         <div className="contact-head">
             <div className="row align-items-center">
@@ -55,4 +55,4 @@ const ContactUser = ({ company }) => (
     </div>
 );
 
-export default ContactUser;
+export default CompanyUser;

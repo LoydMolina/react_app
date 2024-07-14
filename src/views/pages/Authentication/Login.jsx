@@ -28,6 +28,7 @@ const Login = () => {
         defaultValues: {
             email: localStorage.getItem("email") || "",
             password: localStorage.getItem("password") || "",
+            username: localStorage.getItem("username") || "",
         },
     });
 
@@ -37,7 +38,7 @@ const Login = () => {
     const [eye, setEye] = useState(true);
 
     const onSubmit = async (data) => {
-        const result = await login(data.email, data.password);
+        const result = await login(data.email, data.password, data.username);
         if (result.success) {
             navigate("/admin-dashboard");
         } else {
@@ -114,6 +115,7 @@ const Login = () => {
                                                     position: "absolute",
                                                     right: "5%",
                                                     top: "30%",
+                                                    cursor: "pointer",
                                                 }}
                                                 onClick={onEyeClick}
                                                 className={`fa-solid ${
