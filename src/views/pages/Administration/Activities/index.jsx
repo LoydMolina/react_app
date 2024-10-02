@@ -1,23 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import "react-datepicker/dist/react-datepicker.css";
-import Breadcrumbs from "../../../../components/Breadcrumbs";
 import { Table, Input } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
+import "react-datepicker/dist/react-datepicker.css";
+import Breadcrumbs from "../../../../components/Breadcrumbs";
 
 const Activities = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const primaryResponse = await axios.get('https://wd79p.com/backend/public/api/activities');
-        setData(primaryResponse.data.reverse());
+        const [activitiesResponse, usersResponse] = await Promise.all([
+          axios.get('https://wd79p.com/backend/public/api/activities'),
+          axios.get('https://wd79p.com/backend/public/api/users')
+        ]);
+
+        const userMap = {};
+        usersResponse.data.forEach(user => {
+          userMap[user.user_id] = `${user.first_name} ${user.last_name}`;
+        });
+
+        setUsers(userMap);
+        setData(activitiesResponse.data.reverse());
       } catch (error) {
-        console.error('Error fetching activities:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
@@ -28,14 +39,18 @@ const Activities = () => {
 
   const columns = [
     {
-      title: "Id",
-      dataIndex: "id",
-      sorter: (a, b) => a.id - b.id,
+      title: "Name",
+      dataIndex: "user_id",
+      render: (user_id) => users[user_id] || 'Unknown User',
+      sorter: (a, b) => (users[a.user_id] || '').localeCompare(users[b.user_id] || ''),
     },
     {
-      title: "User Id",
-      dataIndex: "user_id",
-      sorter: (a, b) => a.user_id - b.user_id,
+      title: "Subject Type",
+      dataIndex: "subject_type",
+      render: (text) => {
+        const parts = text.split('\\');
+        return parts[parts.length - 1];
+      }
     },
     {
       title: "Subject Id",
@@ -47,14 +62,6 @@ const Activities = () => {
       dataIndex: "action",
     },
     {
-      title: "Subject Type",
-      dataIndex: "subject_type",
-      render: (text) => {
-        const parts = text.split('\\');
-        return parts[parts.length - 1];
-      }
-    },
-    {
       title: "Date",
       dataIndex: "created_at",
       sorter: (a, b) => moment(a.created_at).unix() - moment(b.created_at).unix(),
@@ -62,7 +69,6 @@ const Activities = () => {
     },
   ];
 
-  // Filter data based on exact search term match
   const filteredData = data.filter(item =>
     item.subject_id.toString() === searchTerm.trim()
   );
@@ -89,6 +95,8 @@ const Activities = () => {
                 columns={columns}
                 dataSource={searchTerm ? filteredData : data}
                 loading={loading}
+                pagination={{ pageSize: 10 }} 
+                locale={{ emptyText: "No activities found" }} 
               />
             </div>
           </div>

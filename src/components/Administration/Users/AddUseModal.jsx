@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Select from "react-select";
 import axios from "axios";
+import {useAuth} from '../../../AuthContext'
 
 const AddUserModal = () => {
   const [firstName, setFirstName] = useState("");
@@ -16,11 +17,17 @@ const AddUserModal = () => {
   const [companies, setCompanies] = useState([]);
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const { authState } = useAuth();
+
 
   const generateEmployeeId = () => {
-    const randomNumber = Math.floor(Math.random() * 9000) + 1000; // Random number between 1000 and 9999
+    const randomNumber = Math.floor(Math.random() * 9000) + 1000;
     return `SPRK${randomNumber}`;
   };
+
+  useEffect(() => {
+    setEmployeeId(generateEmployeeId());
+  }, []);
 
   const customStyles = {
     option: (provided, state) => ({
@@ -36,21 +43,29 @@ const AddUserModal = () => {
   const roleOptions = [
     { value: "", label: "--Select Role--" },
     { value: "Admin", label: "Admin" },
-    { value: "Employee", label: "Employee" },
+    { value: "Manager", label: "Manager" },
+    { value: "Agent", label: "Agent" },
   ];
 
   useEffect(() => {
     const fetchCompanies = async () => {
+      const token = authState.token;
       try {
-        const response = await axios.get("https://wd79p.com/backend/public/api/companies");
+        const response = await axios.get("https://wd79p.com/backend/public/api/companies", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
         setCompanies(response.data);
       } catch (error) {
         console.error("Error fetching companies:", error);
       }
     };
 
-    fetchCompanies();
-  }, []);
+    if (authState?.token) {
+      fetchCompanies();
+    }
+  }, [authState?.token]);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -123,8 +138,7 @@ const AddUserModal = () => {
     };
 
     try {
-      const response = await axios.post("https://wd79p.com/backend/public/api/users", userData);
-      console.log("User added successfully:", response.data);
+      const response = await axios.post("https://wd79p.com/backend/public/api/users", userData,);
       setFirstName("");
       setLastName("");
       setDisplayName("");

@@ -1,9 +1,7 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { Avatar_02, Avatar_16 } from "../../../Routes/ImagePath";
 import { Link } from "react-router-dom";
-import ProfileTab from "./ProfileTab";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import AuthContext from "../../../AuthContext"; 
 import moment from 'moment';
@@ -48,18 +46,11 @@ const Profile = () => {
               <div className="row">
                 <div className="col-md-12">
                   <div className="profile-view">
-                    <div className="profile-img-wrap">
-                      <div className="profile-img">
-                        <Link to="#">
-                          <img src={Avatar_02} alt="User Image" />
-                        </Link>
-                      </div>
-                    </div>
                     <div className="profile-basic">
                       <div className="row">
                         <div className="col-md-5">
-                          <div className="profile-info-left">
-                            <h3 className="user-name m-t-0 mb-0">
+                          <div className="profile-info-left" style = {{marginRight: '100px'}}>
+                            <h3 className="user-name m-t-0 mb-0" >
                               {userData.first_name} {userData.last_name}
                             </h3>
                             <h6 className="text-muted">{userData.role}</h6>
@@ -69,18 +60,13 @@ const Profile = () => {
                             <div className="small doj text-muted">
                               Date of Join : {moment(userData.created_at).format('MMMM DD, YYYY [at] h:mma')}
                             </div>
-                            <div className="staff-msg">
-                              <Link className="btn btn-custom" to="/call/chat">
-                                Send Message
-                              </Link>
-                            </div>
                           </div>
                         </div>
                         <div className="col-md-7">
                           <ul className="personal-info">
                             <li>
-                              <div className="title">Phone:</div>
-                              <div className="text">
+                              <div> Phone:</div>
+                              <div>
                                 <Link to={`tel:${userData.phone}`}>
                                   {userData.phone}
                                 </Link>
@@ -106,24 +92,11 @@ const Profile = () => {
                               <div className="title">Gender:</div>
                               <div className="text">{userData.gender}</div>
                             </li>
-                            <li>
-                              <div className="title">Reports to:</div>
-                              <div className="text">
-                                <div className="avatar-box">
-                                  <div className="avatar avatar-xs">
-                                    <img src={Avatar_16} alt="User Image" />
-                                  </div>
-                                </div>
-                                <Link to="profile">
-                                  {userData.supervisor?.name}
-                                </Link>
-                              </div>
-                            </li>
                           </ul>
                         </div>
                       </div>
                     </div>
-                    <div className="pro-edit">
+                    {/* <div className="pro-edit">
                       <Link
                         data-bs-target="#profile_info"
                         data-bs-toggle="modal"
@@ -132,7 +105,7 @@ const Profile = () => {
                       >
                         <i className="fa-solid fa-pencil"></i>
                       </Link>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -152,40 +125,12 @@ const Profile = () => {
                       Profile
                     </Link>
                   </li>
-                  <li className="nav-item">
-                    <Link
-                      to="#emp_projects"
-                      data-bs-toggle="tab"
-                      className="nav-link"
-                    >
-                      Projects
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      to="#bank_statutory"
-                      data-bs-toggle="tab"
-                      className="nav-link"
-                    >
-                      Bank &amp; Statutory
-                      <small className="text-danger ms-1">(Admin Only)</small>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link
-                      to="#emp_assets"
-                      data-bs-toggle="tab"
-                      className="nav-link"
-                    >
-                      Assets
-                    </Link>
-                  </li>
                 </ul>
               </div>
             </div>
           </div>
           {/* Profile Info Tab */}
-          <ProfileTab />
+          {/* <ProfileTab /> */}
         </div>
       </div>
     </>

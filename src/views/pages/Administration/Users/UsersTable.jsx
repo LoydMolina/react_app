@@ -4,6 +4,7 @@ import axios from "axios";
 import { Table, Input } from "antd";
 import EditUseModal from "../../../../components/Administration/Users/EditUseModal";
 import DeleteModal from "../../../../components/modelpopup/deletePopup";
+import {useAuth} from '../../../../AuthContext'
 
 const UsersTable = () => {
   const [data, setData] = useState([]);
@@ -14,16 +15,26 @@ const UsersTable = () => {
   const [editUser, setEditUser] = useState(null);
   const [filterText, setFilterText] = useState(""); 
   const navigate = useNavigate();
+  const {authState} = useAuth();
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    const token = authState.token;
     try {
       const [primaryResponse, companyResponse] = await Promise.all([
-        axios.get('https://wd79p.com/backend/public/api/users'),
-        axios.get('https://wd79p.com/backend/public/api/companies')
+        axios.get('https://wd79p.com/backend/public/api/users', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }),
+        axios.get('https://wd79p.com/backend/public/api/companies', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        })
       ]);
       setData(primaryResponse.data);
       setCompanies(companyResponse.data);
@@ -204,7 +215,7 @@ const UsersTable = () => {
           )}
           {userToDelete && (
             <DeleteModal
-              Name={`User #${userToDelete.user_id}`} 
+              Name={`User#${userToDelete.user_id}`} 
               deleteAction={() => {
                 if (userToDelete) {
                   deleteUser(userToDelete.user_id); 

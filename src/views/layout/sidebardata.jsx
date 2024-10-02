@@ -1,11 +1,11 @@
 
 export const SidebarData = [
 
-
 {
     tittle: 'MAIN',
     showAsTab: false,
     separateRoute: false,
+    roles: ['Admin', 'Manager', 'Agent',],
     menu: [
       {
         menuValue: 'Dashboard',
@@ -13,15 +13,18 @@ export const SidebarData = [
         showSubRoute: false,
         route: "#",
         icon: "la la-dashcube",
+        roles: ['Admin', 'Manager', 'Agent',],
         subMenus: [
           {
             menuValue: 'Admin Dashboard',
             route: "/admin-dashboard",
+            roles: ['Admin', 'Manager']
           },
-          // {
-          //   menuValue: 'Employee Dashboard',
-          //   route: "/employee-dashboard",
-          // },
+          {
+            menuValue: 'Employee Dashboard',
+            route: "/employee-dashboard",
+            roles: ['Admin', 'Manager', 'Agent',]
+          },
           // {
           //   menuValue: 'Deals Dashboard',
           //   route: "/deals-dashboard",
@@ -38,10 +41,12 @@ export const SidebarData = [
         showSubRoute: false,
         route: "#",
         icon: "la la-cube",
+        roles: ['Admin', 'Manager', 'Agent',],
         subMenus: [
           {
             menuValue: 'Chats',
             route: "/chat",
+            roles: ['Admin', 'Manager', 'Agent']
           },
           // {
           //   menuValue: 'Calls',
@@ -90,6 +95,7 @@ export const SidebarData = [
     tittle: 'EMPLOYEES',
     showAsTab: false,
     separateRoute: false,
+    roles: ['Admin', 'Manager', 'Agent'],
     menu: [
       {
         menuValue: 'Employees',
@@ -97,6 +103,7 @@ export const SidebarData = [
         showSubRoute: false,
         route: "#",
         icon: "la la-user",
+        roles: ['Admin', 'Manager'],
         subMenus: [
       //     {
       //       menuValue: 'All Employees',
@@ -122,10 +129,10 @@ export const SidebarData = [
       //       menuValue: 'Attendance (Admin)',
       //       route: "/adminattendance",
       //     },
-          {
-            menuValue: 'Attendance (Employee)',
-            route: "/attendance-employee",
-          },
+          // {
+          //   menuValue: 'Attendance (Employee)',
+          //   route: "/attendance-employee",
+          // },
       //     {
       //       menuValue: 'Departments',
       //       route: "/departments",
@@ -137,6 +144,7 @@ export const SidebarData = [
           {
             menuValue: 'Timesheet',
             route: "/timesheet",
+            roles: ['Admin', 'Manager']
           },
       //     {
       //       menuValue: 'Shift & Schedule',
@@ -181,10 +189,22 @@ export const SidebarData = [
         hasSubRoute: true,
         showSubRoute: false,
         icon: "la la-ticket",
+        roles: ['Admin', 'Manager', 'Agent',],
         subMenus: [
           {
             menuValue: 'Tickets',
             route: "/tickets",
+            roles: ['Admin', 'Manager', 'Agent']
+          },
+          {
+            menuValue: 'Closed Tickets',
+            route: "/closed-tickets",
+            roles: ['Admin', 'Manager', 'Agent']
+          },
+          {
+            menuValue: 'Followed Up',
+            route: "/onhold-tickets",
+            roles: ['Admin', 'Manager', 'Agent']
           },
           // {
           //   menuValue: 'Ticket Details',
@@ -199,20 +219,23 @@ export const SidebarData = [
     tittle: 'CRM',
     showAsTab: false,
     separateRoute: false,
+    roles: ['Admin', 'Manager', 'Agent',],
     menu: [
       {
-        menuValue: 'Contacts',
+        menuValue: 'Customers',
         hasSubRoute: false,
         showSubRoute: false,
         route: "/contact-list",
         icon: "la la-user-shield",
+        roles: ['Admin', 'Manager', 'Agent']
       },
       {
-        menuValue: 'Companies',
+        menuValue: 'Vendors',
         hasSubRoute: false,
         showSubRoute: false,
         route: "/companies",
         icon: "la la-building",
+        roles: ['Admin', 'Manager', 'Agent']
       },
       // {
       //   menuValue: 'Deals',
@@ -248,6 +271,7 @@ export const SidebarData = [
         showSubRoute: false,
         route: "/activities",
         icon: "la la-directions",
+        roles: ['Admin', 'Manager'],
       },
     ],
   },
@@ -491,6 +515,7 @@ export const SidebarData = [
     tittle: 'ADMINISTRATION',
     showAsTab: false,
     separateRoute: false,
+    roles: ['Admin', 'Manager'],
     menu: [
         // {
         //     menuValue: 'Assets',
@@ -564,6 +589,7 @@ export const SidebarData = [
             showSubRoute: false,
             route: "/users",
             icon: "la la-user-plus",
+            roles: ['Admin']
           },
           // {
           //   menuValue: 'Settings',

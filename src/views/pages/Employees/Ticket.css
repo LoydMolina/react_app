@@ -1,0 +1,26 @@
+/* Dropdown Menu Item Styles */
+/* .dropdown-item {
+    color: #fff;
+  } */
+  
+  .status-new {
+    background-color: #28a745; /* Green */
+  }
+  
+  .status-open {
+    background-color: #007bff; /* Blue */
+  }
+  
+  .status-on-hold {
+    background-color: #ffc107; /* Yellow */
+  }
+  
+  .status-closed {
+    background-color: #dc3545; /* Red */
+  }
+  
+  .status-cancelled {
+    background-color: #ffffff; /* White */
+    color: #000; /* Black text for better contrast on white */
+  }
+  

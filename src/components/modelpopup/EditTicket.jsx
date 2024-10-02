@@ -1,31 +1,34 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
 import axios from 'axios';
+import { useAuth } from '../../AuthContext';
 
 const { Option } = Select;
 
 const EditTicket = ({ visible, onClose, onSave, ticket, staffs, companies }) => {
-  const [form] = Form.useForm(); // Form instance created using Ant Design's useForm hook
+  const [form] = Form.useForm();
+  const { authState } = useAuth();
 
   useEffect(() => {
     if (ticket) {
-      form.setFieldsValue(ticket); // Setting form values when ticket prop changes
+      form.setFieldsValue(ticket); 
     } else {
-      form.resetFields(); // Resetting form fields when ticket prop is null or undefined
+      form.resetFields(); 
     }
   }, [ticket, form]);
 
   const handleSave = async () => {
     try {
-      const values = await form.validateFields(); // Validating form fields before saving
-      const updatedTicket = { ...ticket, ...values };
-
-      // Sending updated ticket data to the server using axios
+      const values = await form.validateFields();
+      const updatedTicket = { 
+        ...ticket,
+        ...values,
+        user_id: authState.user_id,
+        };
       const response = await axios.put(`https://wd79p.com/backend/public/api/tickets/${ticket.id}`, updatedTicket);
-      
-      onSave(response.data); // Callback to handle successful save
-      onClose(); // Closing the modal after saving
-      message.success('Ticket updated successfully'); // Success message
+      onSave(response.data); 
+      onClose(); 
+      message.success('Ticket updated successfully'); 
     } catch (error) {
       if (error.response) {
         console.error('Error response data:', error.response.data);
@@ -46,7 +49,7 @@ const EditTicket = ({ visible, onClose, onSave, ticket, staffs, companies }) => 
       okText="Save"
       cancelText="Cancel"
     >
-      <Form form={form} layout="vertical"> {/* Ensure form instance is passed to the Form component */}
+      <Form form={form} layout="vertical">
         <Form.Item
           name="subject"
           label="Subject"
@@ -74,10 +77,8 @@ const EditTicket = ({ visible, onClose, onSave, ticket, staffs, companies }) => 
           <Select>
             <Option value="New">New</Option>
             <Option value="Open">Open</Option>
-            <Option value="Reopened">Reopened</Option>
             <Option value="On Hold">On Hold</Option>
             <Option value="Closed">Closed</Option>
-            <Option value="In Progress">In Progress</Option>
             <Option value="Cancelled">Cancelled</Option>
           </Select>
         </Form.Item>
@@ -88,7 +89,7 @@ const EditTicket = ({ visible, onClose, onSave, ticket, staffs, companies }) => 
         >
           <Select>
             {staffs.map(staff => (
-              <Option key={staff.id} value={staff.id}>
+              <Option key={staff.user_id} value={staff.user_id}>
                 {staff.first_name} {staff.last_name}
               </Option>
             ))}

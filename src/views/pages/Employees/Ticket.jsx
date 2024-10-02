@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Table, Button } from "antd";
+import { Table } from "antd";
 import moment from 'moment';
 import DeleteModal from "../../../components/modelpopup/DeleteModal";
 import TicketModelPopup from "../../../components/modelpopup/TicketModelPopup";
@@ -9,9 +9,11 @@ import Breadcrumbs from "../../../components/Breadcrumbs";
 import TicketFilter from "../../../components/TicketFilter";
 import EditTicket from "../../../components/modelpopup/EditTicket";
 import MergeModal from "../Employees/MergeModal";
+import { useAuth } from "../../../AuthContext";
+import './Ticket.css' 
 
 const Ticket = () => {
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [ticketToEdit, setTicketToEdit] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -19,9 +21,13 @@ const Ticket = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isMergeModalVisible, setIsMergeModalVisible] = useState(false);
+  const [selectedTicketForMerge, setSelectedTicketForMerge] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const navigate = useNavigate();
+  const { authState } = useAuth();
 
-  const handleMergeModalOpen = () => {
+  const handleMergeModalOpen = (record) => {
+    setSelectedTicketForMerge(record.id); 
     setIsMergeModalVisible(true);
   };
 
@@ -45,7 +51,6 @@ const Ticket = () => {
     }
   };
   
-
   useEffect(() => {
     fetch('https://wd79p.com/backend/public/api/tickets')
       .then(response => response.json())
@@ -67,10 +72,10 @@ const Ticket = () => {
 
   const statusCounts = countTicketsByStatus();
 
-  useEffect(() => {
-    axios.get("/api/ticket.json")
-      .then((res) => setUsers(res.data));
-  }, []);
+  // useEffect(() => {
+  //   axios.get("/api/ticket.json")
+  //     .then((res) => setUsers(res.data));
+  // }, []);
 
   const [data, setData] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -78,9 +83,11 @@ const Ticket = () => {
 
   useEffect(() => {
     fetchData();
-    fetchCompanies();
-    fetchStaff();
-  }, []);
+    if (authState?.token) {
+      fetchCompanies(); 
+      fetchStaff();
+    }
+  }, [authState?.token]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -95,12 +102,24 @@ const Ticket = () => {
   };
 
   const fetchCompanies = async () => {
-    const companyResponse = await axios.get('https://wd79p.com/backend/public/api/companies');
+    try{
+      const companyResponse = await axios.get('https://wd79p.com/backend/public/api/companies',{
+        headers: {
+          Authorization: `Bearer ${authState.token}`,
+        },
+      });
     setCompanies(companyResponse.data);
+    } catch (error) {
+    console.error("Error fetching contacts:", error);
+    };
   };
 
   const fetchStaff = async () => {
-    const staffResponse = await axios.get('https://wd79p.com/backend/public/api/users');
+    const staffResponse = await axios.get('https://wd79p.com/backend/public/api/users',{
+      headers: {
+        Authorization: `Bearer ${authState.token}`,
+      },
+    });
     setStaff(staffResponse.data);
   };
 
@@ -127,17 +146,21 @@ const Ticket = () => {
     setData(data.map(ticket => (ticket.id === updatedTicket.id ? updatedTicket : ticket)));
   };
 
-  const refreshTickets = () => {
+  const refreshTickets = async () => {
     fetchData();
   };
-
+  const handleDropdownToggle = (recordId) => {
+    setOpenDropdown(openDropdown === recordId ? null : recordId);
+  };
   const handlePriorityChange = async (id, newPriority) => {
     await axios.put(`https://wd79p.com/backend/public/api/tickets/${id}`, { priority: newPriority });
+
     fetchData();
   };
 
   const handleStatusChange = async (id, newStatus) => {
     await axios.put(`https://wd79p.com/backend/public/api/tickets/${id}`, { status: newStatus });
+
     fetchData();
   };
 
@@ -153,65 +176,48 @@ const Ticket = () => {
         (!filters.companyName || ticket.companyName.toLowerCase().includes(filters.companyName.toLowerCase())) &&
         (!filters.priority || ticket.priority === filters.priority) &&
         (!filters.status || ticket.status === filters.status) &&
-        (ticket.status !== 'Closed') 
+        (ticket.status !== 'Closed') &&
+        (ticket.status !== 'To Be Followed Up')
       );
     });
   };
 
-  const handleRowClick = (record) => {
+  const handleRowClick = (record, e) => {
+    const targetElement = e.target.closest('.action-label, .dropdown-action');
+    if (targetElement) {
+      return;
+    }
     navigate(`/ticket-details/${record.id}`, { state: { ticket: record } });
   };
+  
 
   const filteredData = applyFilters(mergedData);
+  const priorityOrder = {
+    'Emergency': 1,
+    'High': 2,
+    'Medium': 3,
+    'Low': 4
+  };
+
+  const sortedFilteredData = filteredData.sort((a, b) => {
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
 
   const columns = [
     {
       title: "Ticket Id",
       dataIndex: "id",
-      render: (text, record) => (
-        <Link
-          onClick={() => localStorage.setItem("minheight", "true")}
-          to={{
-            pathname: `/ticket-details/${record.id}`,
-            state: { ticket: record }
-          }}
-        >
-          {record.id}
-        </Link>
-      ),
       sorter: (a, b) => a.id - b.id, 
     },
     {
       title: 'Company Name',
       dataIndex: 'companyName',
       key: 'companyName',
-      render: (text, record) => (
-        <Link
-          onClick={() => localStorage.setItem("minheight", "true")}
-          to={{
-            pathname: `/ticket-details/${record.id}`,
-            state: { ticket: record }
-          }}
-        >
-          {record.companyName}
-        </Link>
-      ),
       sorter: (a, b) => a.companyName.localeCompare(b.companyName),
     },
     {
       title: "Ticket Subject",
       dataIndex: "subject",
-      render: (text, record) => (
-        <Link
-          onClick={() => localStorage.setItem("minheight", "true")}
-          to={{
-            pathname: `/ticket-details/${record.id}`,
-            state: { ticket: record }
-          }}
-        >
-          {record.subject}
-        </Link>
-      ),
       sorter: (a, b) => a.subject.length - b.subject.length,
     },
     {
@@ -227,39 +233,50 @@ const Ticket = () => {
       render: (text) => moment(text).format('MMMM DD, YYYY [at] h:mma')
     },
     {
-      title: "Last Reply",
-      dataIndex: "updated_at",
-      sorter: (a, b) => moment(a.updated_at).unix() - moment(b.updated_at).unix(),
-      render: (text) => moment(text).format('MMMM DD, YYYY [at] h:mma')
+      title: "To Email",
+      dataIndex: "to_email",
+      sorter: (a, b) => a.to_email.length - b.to_email.length,
     },
     {
       title: "Priority",
       dataIndex: "priority",
       render: (priority, record) => (
-        <div className="dropdown action-label" onClick={(e) => e.stopPropagation()}>
+        <div className="dropdown action-label" >
           <Link
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
             to="#"
+            onClick={() => handleDropdownToggle(record.id)}
             data-bs-toggle="dropdown"
             aria-expanded="false"
+            style={{
+              backgroundColor:
+                priority === 'Low' ? 'lightgreen'
+                : priority === 'High' ? 'lightblue'
+                : priority === 'Medium' ? 'lightyellow'
+                : priority === 'Emergency' ? 'red'
+                : '',
+              color: 'black', 
+            }}
           >
-            <i className={`far fa-dot-circle ${priority === 'Emergency' ? 'far fa-dot-circle text-danger' 
-              : priority === 'High' ? 'far fa-circle text-danger' 
-              : priority === 'Medium' ? 'far fa-circle text-warning' 
-              : 'far fa-circle text-success'}`} /> {priority}
+            
+            <i className={` ${
+                priority === 'Emergency' ? 'status-closed' 
+              : priority === 'High' ? 'status-open' 
+              : priority === 'Medium' ? 'status-on-hold' 
+              : 'status-new'}`} /> {priority}
           </Link>
           <div className="dropdown-menu dropdown-menu-right">
-            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'Emergency')}>
-              <i className="far fa-dot-circle text-danger" /> Emergency
+            <Link className="dropdown-item" style={{backgroundColor:'red'}} to="#" onClick={() => handlePriorityChange(record.id, 'Emergency')}>
+               Emergency
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'High')}>
-              <i className="far fa-circle text-danger" /> High
+            <Link className="dropdown-item " style={{backgroundColor:'lightblue'}} to="#" onClick={() => handlePriorityChange(record.id, 'High')}>
+               High
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'Medium')}>
-              <i className="far fa-circle text-warning" /> Medium
+            <Link className="dropdown-item"style={{backgroundColor:'lightyellow'}} to="#" onClick={() => handlePriorityChange(record.id, 'Medium')}>
+               Medium
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handlePriorityChange(record.id, 'Low')}>
-              <i className="far fa-circle text-success" /> Low
+            <Link className="dropdown-item"style={{backgroundColor:'lightgreen'}} to="#" onClick={() => handlePriorityChange(record.id, 'Low')}>
+               Low
             </Link>
           </div>
         </div>
@@ -270,39 +287,63 @@ const Ticket = () => {
       title: "Status",
       dataIndex: "status",
       render: (status, record) => (
-        <div className="dropdown action-label text-center" onClick={(e) => e.stopPropagation()}>
+        <div className="dropdown action-label text-center" >
           <Link
-            className="btn btn-white btn-sm btn-rounded dropdown-toggle"
+            className="btn btn-sm btn-rounded dropdown-toggle"
+            onClick={() => handleDropdownToggle(record.id)}
             to="#"
             data-bs-toggle="dropdown"
             aria-expanded="false"
+            style={{
+              backgroundColor:
+                status === 'New' ? 'lightgreen'
+                : status === 'In Progress' ? 'lightblue'
+                : status === 'To Be Followed' ? 'lightyellow'
+                : status === 'Estimate Sent' ? 'cyan'
+                : status === 'Purchased Order' ? 'orange'
+                : status === 'Solved' ? 'white'
+                : status === 'Closed' ? 'red'
+                : '',
+              color: 'black', 
+            }}
           >
-            <i className={`far fa-dot-circle ${
-                status === 'New' ? 'far fa-circle text-success' 
-              : status === 'Open' ? 'far fa-dot-circle text-success' 
-              : status === 'Reopened' ? 'far fa-dot-circle text-info' 
-              : status === 'On Hold' ? 'far fa-dot-circle text-warning' 
-              : status === 'Closed' ? 'far fa-dot-circle text-danger' 
-              : status === 'In Progress' ? 'far fa-circle text-info' 
-              : status === 'Cancelled' ? 'far fa-circle text-dangertext-danger' 
-              : ''
-            }`} /> {status}
+            <i
+              className={` ${
+                status === 'New' ? 'status-new' 
+                : status === 'In Progress' ? 'status-open' 
+                : status === 'To be Followed Up' ? 'status-on-hold' 
+                : status === 'Estimate Sent' ? 'status-closed' 
+                : status === 'Purchased Order' ? 'status-cancelled' 
+                : status === 'Solved' ? 'status-cancelled' 
+                : status === 'Closed' ? 'status-cancelled' 
+                : ''
+              }`}
+            />{' '}
+            {status}
           </Link>
+
+
           <div className="dropdown-menu dropdown-menu-right">
-            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'New')}>
-              <i className="far fa-circle text-success" /> New
+            <Link className="dropdown-item" style={{backgroundColor:'lightgreen'}} to="#" onClick={() => handleStatusChange(record.id, 'New')}>
+               New
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'Open')}>
-              <i className="far fa-dot-circle text-success" /> Open
+            <Link className="dropdown-item" style={{backgroundColor:'lightblue'}} to="#" onClick={() => handleStatusChange(record.id, 'In Progress')}>
+               In Progress
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'On Hold')}>
-              <i className="far fa-dot-circle text-warning" /> On Hold
+            <Link className="dropdown-item" style={{backgroundColor:'lightyellow'}} to="#" onClick={() => handleStatusChange(record.id, 'To Be Followed Up')}>
+               To Be Followed Up
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'Closed')}>
-              <i className="far fa-dot-circle text-danger" /> Closed
+            <Link className="dropdown-item" style={{backgroundColor:'cyan'}} to="#" onClick={() => handleStatusChange(record.id, 'Estimate Sent')}>
+               Estimate Sent
             </Link>
-            <Link className="dropdown-item" to="#" onClick={() => handleStatusChange(record.id, 'Cancelled')}>
-              <i className="far fa-circle text-dangertext-danger" /> Cancelled
+            <Link className="dropdown-item" style={{backgroundColor:'orange'}} to="#" onClick={() => handleStatusChange(record.id, 'Purchased Order')}>
+               Purchased Order
+            </Link>
+            <Link className="dropdown-item" style={{backgroundColor:'white'}} to="#" onClick={() => handleStatusChange(record.id, 'Solved')}>
+               Solved
+            </Link>
+            <Link className="dropdown-item" style={{backgroundColor:'red'}} to="#" onClick={() => handleStatusChange(record.id, 'Closed')}>
+               Closed
             </Link>
           </div>
         </div>
@@ -312,7 +353,7 @@ const Ticket = () => {
     {
       title: "Action",
       render: (text, record) => (
-        <div className="dropdown dropdown-action text-end" onClick={(e) => e.stopPropagation()}>
+        <div className="dropdown dropdown-action text-end" >
           <Link
             to="#"
             className="action-icon dropdown-toggle"
@@ -338,11 +379,20 @@ const Ticket = () => {
               className="dropdown-item"
               to="#"
               data-bs-toggle="modal"
+              data-bs-target="#merge"
+              onClick={() => handleMergeModalOpen(record)} 
+            >
+              <i className="fa fa-code-branch m-r-5" /> Merge
+            </Link>
+            {/* <Link
+              className="dropdown-item"
+              to="#"
+              data-bs-toggle="modal"
               data-bs-target="#delete"
               onClick={() => setTicketToDelete(record)}
             >
               <i className="fa fa-trash m-r-5" /> Delete
-            </Link>
+            </Link> */}
           </div>
         </div>
       ),
@@ -378,24 +428,23 @@ const Ticket = () => {
         onCancel={handleMergeModalClose}
         onMerge={handleMerge}
         tickets={tickets}
+        initialTicketId={selectedTicketForMerge}
       />
-      <Button onClick={handleMergeModalOpen}>Merge Tickets</Button>
       </div>
     </div>
           <TicketFilter onFilterChange={handleFilterChange} />
-          
           <div className="row">
             <div className="col-md-12">
               <div className="table-responsive">
                 <Table
                   className="table-striped"
                   rowKey={(record) => record.id}
-                  style={{ overflowX: "auto" }}
+                  style={{ overflowX: "auto", paddingBottom:'200px' }}
                   columns={columns}
-                  dataSource={filteredData}
+                  dataSource={sortedFilteredData}
                   loading={loading}
                   onRow={(record) => ({
-                    onClick: () => handleRowClick(record),
+                    onClick: (e) => handleRowClick(record,e),
                     style: { cursor: 'pointer' },
                     className: 'table-row-hover'
                   })}

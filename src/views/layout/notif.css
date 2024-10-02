@@ -1,0 +1,20 @@
+.unread {
+    background-color: #9ec0df;
+    font-weight: bold;         
+    border: #6d6b6b;
+  }
+  
+  .read {
+    background-color: #ffffff; 
+    font-weight: normal;    
+  }
+  
+  .notification-message {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .notification-message:hover {
+    background-color: #d3d3d3; 
+  }
+  

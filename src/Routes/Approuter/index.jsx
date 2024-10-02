@@ -1,57 +1,29 @@
-import React, { useEffect, useRef } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import AppContainer from "../Appcontainer";
+import React, { useEffect } from "react";
+import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import store from "../../store";
 import { Provider } from "react-redux";
 import Login from "../../views/pages/Authentication/Login";
-import Register from "../../views/pages/Authentication/Register";
-import Otp from "../../views/pages/Authentication/Otp";
-import Error404 from "../../views/pages/Error/Error404";
-import Error500 from "../../views/pages/Error/Error500";
-import JobList from "../../views/pages/Authentication/JobList";
-import JobView from "../../views/pages/Authentication/JobView";
-import ChangePassword from "../../views/pages/Authentication/ChangePassword";
-import ForgotPassword from "../../views/pages/Authentication/ForgotPassword";
-import LockScreen from "../../views/pages/Authentication/LockScreen";
-import Accordions from "../../views/pages/Ui_Interface/Components/Accordions";
-import Alerts from "../../views/pages/Ui_Interface/Components/Alerts";
-import Breadcrumbs from "../../views/pages/Ui_Interface/Components/Breadcrumbs";
-import Avatar from "../../views/pages/Ui_Interface/Components/Avatar";
-import Badges from "../../views/pages/Ui_Interface/Components/Badges";
-import ButtonCard from "../../views/pages/Ui_Interface/Components/ButtonCard";
-import ButtonGroup from "../../views/pages/Ui_Interface/Components/ButtonGroup";
-import Cards from "../../views/pages/Ui_Interface/Components/Cards";
-import Dropdowns from "../../views/pages/Ui_Interface/Components/Dropdowns";
-import Grid from "../../views/pages/Ui_Interface/Components/Grid";
-import Images from "../../views/pages/Ui_Interface/Components/Images";
-import Media from "../../views/pages/Ui_Interface/Components/Media";
-import Modals from "../../views/pages/Ui_Interface/Components/Modals";
-import Offcanvas from "../../views/pages/Ui_Interface/Components/Offcanvas";
-import Pagination from "../../views/pages/Ui_Interface/Components/Pagination";
-import Popover from "../../views/pages/Ui_Interface/Components/Popover";
-import Progress from "../../views/pages/Ui_Interface/Components/Progress";
-import Placeholder from "../../views/pages/Ui_Interface/Components/Placeholder";
-import RangeSlider from "../../views/pages/Ui_Interface/Components/RangeSlider";
-import Spinners from "../../views/pages/Ui_Interface/Components/Spinners";
-import SweetAlert from "../../views/pages/Ui_Interface/Components/SweetAlert";
-import Tabs from "../../views/pages/Ui_Interface/Components/Tabs";
-import Toats from "../../views/pages/Ui_Interface/Components/Toats";
-import Typography from "../../views/pages/Ui_Interface/Components/Typography";
-import Videos from "../../views/pages/Ui_Interface/Components/Videos";
-import Lightbox from "../../views/pages/Ui_Interface/Components/Lightbox";
-import Carousel from "../../views/pages/Ui_Interface/Components/Carousel";
-import { Navigate } from "react-router-dom/dist";
-import Borders from "../../views/pages/Ui_Interface/Components/Borders";
-import Breadcrumb from "../../views/pages/Ui_Interface/Components/Breadcrumb";
-import Colors from "../../views/pages/Ui_Interface/Components/colors";
-import UiModals from "../../views/pages/Ui_Interface/Components/uimodals";
-import Spinner from "../../views/pages/Ui_Interface/Components/Spinner";
-// import Tooltips from "../../views/pages/Ui_Interface/Components/Tooltip";
-import ComingSoon from "../../views/pages/Pages/ComingSoon";
-import UnderManitenance from "../../views/pages/Pages/UnderManitenance";
 import { AuthProvider } from "../../AuthContext";
 import ProtectedRoute from "../../ProtectedRoute";
 import PublicRoute from "../PublicRoute";
+import AdminDashboard from "../../views/pages/MainPages/Dashboard/AdminDashboard/adminDashboard";
+import Ticket from "../../views/pages/Employees/Ticket";
+import TicketDetails from "../../views/pages/Employees/TicketDetails";
+import Header from "../../views/layout/Header";
+import Sidebar from "../../views/layout/Sidebar";
+import { Outlet } from "react-router-dom";
+import EmployeeDashboard from "../../views/pages/MainPages/Dashboard/EmployeeDashboard";
+import Chat from "../../views/pages/MainPages/Apps/chat";
+import TimeSheet from "../../views/pages/Employees/TimeSheet";
+import ContactsList from "../../views/pages/Crm/ContactList";
+import ContactDetails from "../../views/pages/Crm/ContactDetails";
+import Companies from "../../views/pages/Crm/companies";
+import Activities from "../../views/pages/Administration/Activities";
+import Users from "../../views/pages/Administration/Users";
+import UsersDetails from "../../views/pages/Administration/Users/UsersDetails";
+import Profile from "../../views/pages/Profile/Profile";
+import ClosedTicket from "../../views/pages/Employees/ClosedTicket";
+import OnHoldTicket from "../../views/pages/Employees/OnHoldTicket";
 
 const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -64,50 +36,31 @@ const ScrollToTop = () => {
 };
 
 const AppRouter = () => {
-    const isTabClosed = useRef(true);
-
-    useEffect(() => {
-        const handleUnload = () => {
-            if (isTabClosed.current) {
-                sessionStorage.removeItem("email");
-                sessionStorage.removeItem("token");
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'hidden') {
-                isTabClosed.current = true;
-            } else {
-                isTabClosed.current = false;
-            }
-        };
-
-        window.addEventListener("unload", handleUnload);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            window.removeEventListener("unload", handleUnload);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-        };
-    }, []);
+    const SidebarLayout = () => (
+        <>
+          <Header />
+          <Sidebar />
+          <Outlet />
+        </>
+      );
 
     return (
         <Provider store={store}>
-            <AuthProvider>
-                <BrowserRouter basename="/">
+            <BrowserRouter basename="/">
+                <AuthProvider>
                     <ScrollToTop />
                     <Routes>
-                        <Route path="/" element={
+                        <Route path="/login" element={
                             <PublicRoute>
                                 <Login />
                             </PublicRoute>
                         } />
-                        <Route path="/register" element={
+                        {/* <Route path="/register" element={
                             <PublicRoute>
                                 <Register />
                             </PublicRoute>
-                        } />
-                        <Route path="/otp" element={<Otp />} />
+                        } /> */}
+                        {/* <Route path="/otp" element={<Otp />} />
                         <Route path="/error-404" element={<Error404 />} />
                         <Route path="/error-500" element={<Error500 />} />
                         <Route path="/coming-soon" element={<ComingSoon />} />
@@ -115,182 +68,102 @@ const AppRouter = () => {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/lock-screen" element={<LockScreen />} />
                         <Route path="/job-list" element={<JobList />} />
-                        <Route path="/job-view" element={<JobView />} />
-
-                        <Route path="/*" element={
-                            <ProtectedRoute>
-                                <AppContainer />
+                        <Route path="/job-view" element={<JobView />} /> */}
+                        <Route path="/employee-dashboard" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <EmployeeDashboard />
                             </ProtectedRoute>
                         } />
-                        <Route path="/change-password" element={
-                            <ProtectedRoute>
-                                <ChangePassword />
+                        <Route path="/admin-dashboard" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                                <SidebarLayout />
+                                <AdminDashboard />
                             </ProtectedRoute>
                         } />
-                        <Route path="/accordion" element={
-                            <ProtectedRoute>
-                                <Accordions />
+                        <Route path="/profile" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <Profile />
                             </ProtectedRoute>
                         } />
-                        <Route path="/alerts" element={
-                            <ProtectedRoute>
-                                <Alerts />
+                        <Route path="/chat" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <Chat />
                             </ProtectedRoute>
                         } />
-                        <Route path="/breadcrumbs" element={
-                            <ProtectedRoute>
-                                <Breadcrumbs />
+                        <Route path="/timesheet" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                                <SidebarLayout />
+                                <TimeSheet />
                             </ProtectedRoute>
                         } />
-                        <Route path="/avatar" element={
-                            <ProtectedRoute>
-                                <Avatar />
+                        <Route path="/tickets" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <Ticket />
                             </ProtectedRoute>
                         } />
-                        <Route path="/badges" element={
-                            <ProtectedRoute>
-                                <Badges />
+                            <Route path="/closed-tickets" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <ClosedTicket />
                             </ProtectedRoute>
                         } />
-                        <Route path="/buttons" element={
-                            <ProtectedRoute>
-                                <ButtonCard />
+                        <Route path="/onhold-tickets" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <OnHoldTicket />
                             </ProtectedRoute>
                         } />
-                        <Route path="/buttongroup" element={
-                            <ProtectedRoute>
-                                <ButtonGroup />
+                        <Route path="/ticket-details/:id" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <TicketDetails />
                             </ProtectedRoute>
                         } />
-                        <Route path="/cards" element={
-                            <ProtectedRoute>
-                                <Cards />
+                        <Route path="/contact-list" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <ContactsList />
                             </ProtectedRoute>
                         } />
-                        <Route path="/dropdowns" element={
-                            <ProtectedRoute>
-                                <Dropdowns />
+                        <Route path="/contact-details/:id" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <ContactDetails />
                             </ProtectedRoute>
                         } />
-                        <Route path="/grid" element={
-                            <ProtectedRoute>
-                                <Grid />
+                        <Route path="/companies" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                                <SidebarLayout />
+                                <Companies />
                             </ProtectedRoute>
                         } />
-                        <Route path="/images" element={
-                            <ProtectedRoute>
-                                <Images />
+                        <Route path="/activities" element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                                <SidebarLayout />
+                                <Activities />
                             </ProtectedRoute>
                         } />
-                        <Route path="/media" element={
-                            <ProtectedRoute>
-                                <Media />
+                        <Route path="/users" element={
+                            <ProtectedRoute allowedRoles={['Admin']}>
+                                <SidebarLayout />
+                                <Users />
                             </ProtectedRoute>
                         } />
-                        <Route path="/modal" element={
-                            <ProtectedRoute>
-                                <Modals />
+                        <Route path="/users-details/:id" element={
+                            <ProtectedRoute allowedRoles={['Admin']}>
+                                <SidebarLayout />
+                                <UsersDetails />
                             </ProtectedRoute>
                         } />
-                        <Route path="/offcanvas" element={
-                            <ProtectedRoute>
-                                <Offcanvas />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/pagination" element={
-                            <ProtectedRoute>
-                                <Pagination />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/popover" element={
-                            <ProtectedRoute>
-                                <Popover />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/progress" element={
-                            <ProtectedRoute>
-                                <Progress />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/placeholders" element={
-                            <ProtectedRoute>
-                                <Placeholder />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/rangeslider" element={
-                            <ProtectedRoute>
-                                <RangeSlider />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/spinners" element={
-                            <ProtectedRoute>
-                                <Spinners />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/sweetalert" element={
-                            <ProtectedRoute>
-                                <SweetAlert />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/tabs" element={
-                            <ProtectedRoute>
-                                <Tabs />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/toast" element={
-                            <ProtectedRoute>
-                                <Toats />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/typography" element={
-                            <ProtectedRoute>
-                                <Typography />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/videos" element={
-                            <ProtectedRoute>
-                                <Videos />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/lightbox" element={
-                            <ProtectedRoute>
-                                <Lightbox />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/carousel" element={
-                            <ProtectedRoute>
-                                <Carousel />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/borders" element={
-                            <ProtectedRoute>
-                                <Borders />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/breadcrumb" element={
-                            <ProtectedRoute>
-                                <Breadcrumb />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/colors" element={
-                            <ProtectedRoute>
-                                <Colors />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/modals" element={
-                            <ProtectedRoute>
-                                <UiModals />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/spinner" element={
-                            <ProtectedRoute>
-                                <Spinner />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="*" element={<Navigate to="/" />} />
+                        <Route path="/unauthorized" element={<Navigate to="/employee-dashboard" />} />
+                        <Route path="*" element={<Navigate to="/login" />} />
                     </Routes>
-                </BrowserRouter>
-            </AuthProvider>
+                    </AuthProvider>
+            </BrowserRouter>
         </Provider>
     );
 };

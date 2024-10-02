@@ -198,8 +198,13 @@ import EmailView from "../../views/pages/MainPages/Apps/Email/emailView.jsx";
 import DealsDetails from "../../views/pages/Crm/DealsDetails.jsx";
 import { components } from "react-select";
 import UsersDetails from "../../../src/views/pages/Administration/Users/UsersDetails.jsx";
+import { useAuth } from "../../AuthContext.js";
 
 const AppContainer = () => {
+
+  const { authState } = useAuth();
+  const { role } = authState;
+
   useEffect(() => {
     localStorage.setItem("colorschema", "orange");
     localStorage.setItem("layout", "vertical");

@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 // import CompanyEditModal from '../../../components/modelpopup/Crm/CompanyEditModal';
 import CompanyUser from './CompanyUser';
 import ContactTabs from './ContactTabs';
-import axios from 'axios';
 import CompanySidebar from './CompanySidebar';
 
 const CompanyDetails = ({ company, onBack }) => {
@@ -15,21 +14,21 @@ const CompanyDetails = ({ company, onBack }) => {
     ];
 
     const [isFullScreen, setFullScreen] = useState(false);
-    const [activities, setActivities] = useState([]);
+    // const [activities, setActivities] = useState([]);
     const maximizeBtnRef = useRef(null);
 
-    useEffect(() => {
-        const fetchActivities = async () => {
-            try {
-                const response = await axios.get(`https://wd79p.com/backend/public/api/companies/${company.id}/activities`);
-                setActivities(response.data);
-            } catch (error) {
-                console.error('Error fetching activities:', error);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchActivities = async () => {
+    //         try {
+    //             const response = await axios.get(`https://wd79p.com/backend/public/api/companies/${company.id}/activities`);
+    //             setActivities(response.data);
+    //         } catch (error) {
+    //             console.error('Error fetching activities:', error);
+    //         }
+    //     };
 
-        fetchActivities();
-    }, [company.id]);
+    //     fetchActivities();
+    // }, [company.id]);
 
     useEffect(() => {
         const handleClick = () => {
@@ -98,7 +97,7 @@ const CompanyDetails = ({ company, onBack }) => {
                 <div className="row">
                     <CompanyUser company={company} />
                     <CompanySidebar company={company} />
-                    <ContactTabs optionsSortValue={optionsSortValue} customStyles={customStyles} company={company} activities={activities} />
+                    <ContactTabs optionsSortValue={optionsSortValue} customStyles={customStyles} company={company}  />
                 </div>
             </div>
             {/* <CompaniesDetailModal />

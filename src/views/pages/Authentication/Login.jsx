@@ -1,6 +1,5 @@
-// Login.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Applogo } from "../../../Routes/ImagePath";
 import { Controller, useForm } from "react-hook-form";
 import * as Yup from "yup";
@@ -19,7 +18,6 @@ const validationSchema = Yup.object().shape({
 
 const Login = () => {
     const {
-        register,
         control,
         handleSubmit,
         formState: { errors },
@@ -28,7 +26,6 @@ const Login = () => {
         defaultValues: {
             email: localStorage.getItem("email") || "",
             password: localStorage.getItem("password") || "",
-            username: localStorage.getItem("username") || "",
         },
     });
 
@@ -36,13 +33,28 @@ const Login = () => {
     const navigate = useNavigate();
     const [emailError, setEmailError] = useState(false);
     const [eye, setEye] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const onSubmit = async (data) => {
-        const result = await login(data.email, data.password, data.username);
-        if (result.success) {
-            navigate("/admin-dashboard");
-        } else {
+        setLoading(true);
+        setEmailError(false);
+        try {
+            const result = await login(data.email, data.password);
+            if (result.success) {
+                // Set clock-in status here
+                localStorage.setItem("clockedIn", "true");
+                // Navigate based on role
+                if (result.role === 'Agent') {
+                    navigate("/employee-dashboard");
+                }
+            } else {
+                setEmailError(true);
+            }
+        } catch (error) {
+            console.error("Login failed:", error);
             setEmailError(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -54,9 +66,6 @@ const Login = () => {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="account-content">
-                    <Link to="/job-list" className="btn btn-primary apply-btn">
-                        Apply Job
-                    </Link>
                     <div className="container">
                         <div className="account-logo">
                             <img src={Applogo} alt="Spark CRM" />
@@ -75,27 +84,19 @@ const Login = () => {
                                             render={({ field }) => (
                                                 <input
                                                     className={`form-control ${
-                                                        errors?.email ? "error-input" : ""
+                                                        errors.email ? "error-input" : ""
                                                     }`}
                                                     type="text"
                                                     {...field}
-                                                    autoComplete="true"
+                                                    autoComplete="email"
+                                                    placeholder="Enter your email"
                                                 />
                                             )}
                                         />
                                         <span className="text-danger">{errors.email?.message}</span>
                                     </div>
                                     <div className="input-block mb-4">
-                                        <div className="row">
-                                            <div className="col">
-                                                <label className="col-form-label">Password</label>
-                                            </div>
-                                            <div className="col-auto">
-                                                <Link className="text-muted" to="/forgot-password">
-                                                    Forgot password?
-                                                </Link>
-                                            </div>
-                                        </div>
+                                        <label className="col-form-label">Password</label>
                                         <div style={{ position: "relative" }}>
                                             <Controller
                                                 name="password"
@@ -103,10 +104,11 @@ const Login = () => {
                                                 render={({ field }) => (
                                                     <input
                                                         className={`form-control ${
-                                                            errors?.password ? "error-input" : ""
+                                                            errors.password ? "error-input" : ""
                                                         }`}
                                                         type={eye ? "password" : "text"}
                                                         {...field}
+                                                        placeholder="Enter your password"
                                                     />
                                                 )}
                                             />
@@ -114,13 +116,14 @@ const Login = () => {
                                                 style={{
                                                     position: "absolute",
                                                     right: "5%",
-                                                    top: "30%",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
                                                     cursor: "pointer",
                                                 }}
                                                 onClick={onEyeClick}
                                                 className={`fa-solid ${
                                                     eye ? "fa-eye-slash" : "fa-eye"
-                                                } `}
+                                                }`}
                                             />
                                         </div>
                                         <span className="text-danger">
@@ -136,8 +139,9 @@ const Login = () => {
                                         <button
                                             className="btn btn-primary account-btn"
                                             type="submit"
+                                            disabled={loading}
                                         >
-                                            Login
+                                            {loading ? "Logging in..." : "Login"}
                                         </button>
                                     </div>
                                 </form>

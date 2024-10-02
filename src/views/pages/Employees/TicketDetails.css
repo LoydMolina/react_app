@@ -1,0 +1,60 @@
+.ticket-reply-list {
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.ticket-reply-thread {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.ticket-reply-card {
+    padding: 10px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.ticket-reply-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -10px;
+    height: 100%;
+    width: 5px;
+    background-color: #007bff; 
+    border-radius: 3px;
+}
+
+.ticket-reply-content {
+    margin-left: 20px; 
+}
+
+.ticket-reply-info {
+    margin-bottom: 5px;
+}
+
+.ticket-reply-info h6 {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.ticket-reply-info h7.ticket-reply-time {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
+}
+
+.ticket-attachment {
+    margin-top: 10px;
+    align-self: flex-end;
+}
+
+.ticket-attachment a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+

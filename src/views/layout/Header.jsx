@@ -1,178 +1,165 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
-/* eslint-disable react/no-unescaped-entities */
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import notifications from "../../assets/json/notifications";
-import message from "../../assets/json/message";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../AuthContext";
-import {
-  Applogo,
-  Avatar_02,
-  lnEnglish,
-  lnFrench,
-  lnGerman,
-  lnSpanish,
-} from "../../Routes/ImagePath";
-import { FaRegBell, FaRegComment } from "react-icons/fa";
-import { useTranslation } from "react-i18next";
+import { Applogo, Avatar_02 } from "../../Routes/ImagePath";
+import { FaRegBell } from "react-icons/fa";
+import WhatsAppChatModal from "../../components/modelpopup/WhatsApp/WhatsAppChatModal";
+import { Button } from "antd";
+import { FaWhatsapp } from "react-icons/fa";
+import "../layout/notif.css";
 
 const Header = () => {
   const { logout, authState } = useAuth();
-  const data = notifications.notifications;
-  const datas = message.message;
-  const [dropdown, setDropdown] = useState({
-    notification: false,
-    flag: false,
-    isOpen: false,
-    profile: false,
-  });
-  const [flagImage, setFlagImage] = useState(lnEnglish);
-  const [firstName, setFirstName] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotifications, setUnreadNotifications] = useState([]);
+  const [userNames, setUserNames] = useState({});
+  const [dropdown, setDropdown] = useState({ notification: false, profile: false });
+  const [userInfo, setUserInfo] = useState({ firstName: "", lastName: "", role: "" });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get(`https://wd79p.com/backend/public/api/users/${authState.user_id}`);
-        setFirstName(response.data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    if (authState.user_id) {
-      fetchUserData();
-    }
-  }, [authState.user_id]);
-
-  const handleSidebar = () => {
-    document.body.classList.toggle("mini-sidebar");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const showModal = () => setIsModalVisible(true);
+  const handleClose = () => setIsModalVisible(false);
+  const [unreadMessages, setUnreadMessages] = useState(false);
+  const handleUnreadMessagesUpdate = (hasUnread) => {
+    setUnreadMessages(hasUnread);
   };
-  const onMenuClick = () => {
-    document.body.classList.toggle("slide-nav");
+
+
+  const fetchUserData = async () => {
+    if (!authState.user_id) return;
+    try {
+      const { data } = await axios.get(`https://wd79p.com/backend/public/api/users/${authState.user_id}`, {
+        headers: {
+          Authorization: `Bearer ${authState.token}`,
+        },
+      });
+      setUserInfo({ firstName: data.first_name, lastName: data.last_name, role: data.role });
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    if (!authState.user_id) return;
+    
+    try {
+      const { data } = await axios.get(`https://wd79p.com/backend/public/api/users/${authState.user_id}/activities/unread`);
+      const unread = data.filter((notification) => notification.pivot && notification.pivot.notif_read === 0);
+      const read = data.filter((notification) => notification.pivot && notification.pivot.notif_read === 1);
+
+      setUnreadNotifications(unread);
+      setNotifications(read);
+
+      const userIds = [...new Set(data.map((n) => n.user_id))];
+      const names = await Promise.all(userIds.map(async (userId) => {
+        const userResponse = await axios.get(`https://wd79p.com/backend/public/api/users/${userId}`);
+        return { [userId]: `${userResponse.data.first_name} ${userResponse.data.last_name}` };
+      }));
+
+      setUserNames(Object.assign({}, ...names));
+
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  const startPolling = () => {
+    const poll = async () => {
+      await fetchNotifications();
+      setTimeout(poll, 5000);
+    };
+    poll();
+  };
+
+  
+  useEffect(() => {
+    fetchUserData();
+    fetchNotifications();
+    startPolling();
+  }, [authState.user_id]); 
+
+  const handleNotificationClick = async (activityId, link) => {
+    await markNotificationAsRead(activityId);
+    navigate(link);
+  };
+
+  const markNotificationAsRead = async (activityId) => {
+    try {
+      await axios.post(`https://wd79p.com/backend/public/api/users/${authState.user_id}/activities/${activityId}/read`);
+      setUnreadNotifications((prev) => prev.filter((notification) => notification.pivot.activity_id !== activityId));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const formatNotification = (notification) => {
+    const { user_id, action, subject_type, created_at, subject_id, pivot } = notification;
+    const formattedDate = new Date(created_at).toLocaleString();
+    const userName = userNames[user_id] || "Unknown User";
+    const subjectType = subject_type.split("\\").pop();
+    const linkMap = {
+      Ticket: `/ticket-details/${subject_id}`,
+      User: `/users-details/${subject_id}`,
+      Merge: `/ticket-details/${subject_id}`,
+      Contact: `/contact-details/${subject_id}`,
+    };
+    return {
+      activity_id: pivot.activity_id || null,
+      message: `${userName} ${action} on ${subjectType} ${subject_id} at ${formattedDate}`,
+      link: linkMap[subjectType] || "#",
+      isRead: pivot.notif_read === 1,
+      created_at: new Date(created_at) 
+    };
   };
 
   const toggleDropdown = (type) => {
-    setDropdown((prev) => ({
-      ...prev,
-      [type]: !prev[type],
-    }));
-  };
-
-  const location = useLocation();
-  const pathname = location.pathname;
-
-  const credencial = localStorage.getItem("credencial");
-  const value = JSON.parse(credencial);
-  const userName = value?.email?.split("@")[0];
-  const profileName = userName?.charAt(0).toUpperCase() + userName?.slice(1);
-
-  const { t, i18n } = useTranslation();
-
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-    setFlagImage(
-      lng === "en"
-        ? lnEnglish
-        : lng === "fr"
-        ? lnFrench
-        : lng === "es"
-        ? lnSpanish
-        : lnGerman
-    );
+    setDropdown((prev) => ({ ...prev, [type]: !prev[type] }));
   };
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      localStorage.removeItem("token");
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await logout();
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
     <div className="header" style={{ right: "0px" }}>
-      {/* Logo */}
       <div className="header-left">
-        <Link to="/admin-dashboard" className="logo">
+        <Link to="/employee-dashboard" className="logo">
           <img src={Applogo} width={75} height={75} alt="logo" />
         </Link>
-        <Link to="/admin-dashboard" className="logo2">
+        <Link to="/employee-dashboard" className="logo2">
           <img src={Applogo} width={40} height={40} alt="logo" />
         </Link>
       </div>
-      {/* /Logo */}
-      <Link
-        id="toggle_btn"
-        to="#"
-        style={{
-          display: pathname.includes("tasks") || pathname.includes("compose") ? "none" : "",
-        }}
-        onClick={handleSidebar}
-      >
-        <span className="bar-icon">
-          <span />
-          <span />
-          <span />
-        </span>
-      </Link>
-      {/* Header Title */}
-      <div className="page-title-box">
-        <h3>SparkCRM</h3>
-      </div>
-      {/* /Header Title */}
-      <Link id="mobile_btn" className="mobile_btn" to="#" onClick={onMenuClick}>
-        <i className="fa fa-bars" />
-      </Link>
-      {/* Header Menu */}
       <ul className="nav user-menu">
-        {/* Search */}
-        <li className="nav-item">
-          <div className="top-nav-search">
-            <Link to="#" className="responsive-search">
-              <i className="fa fa-search" />
-            </Link>
-            <form>
-              <input className="form-control" type="text" placeholder="Search here" />
-              <button className="btn" type="submit">
-                <i className="fa fa-search" />
-              </button>
-            </form>
-          </div>
-        </li>
-        {/* /Search */}
-        {/* Flag */}
-        <li className="nav-item dropdown has-arrow flag-nav">
-          <Link
-            className="nav-link dropdown-toggle"
-            data-bs-toggle="dropdown"
-            to="#"
-            role="button"
-            onClick={() => toggleDropdown("flag")}
+        <div>
+          <Button
+            className="nav-item"
+            onClick={showModal}
+            style={{ backgroundColor: "#45C554", borderColor: "#45C554", color: "#ffffff" }}
+            icon={<FaWhatsapp style={{ fontSize: '20px', color: '#ffffff' }} />}
           >
-            <img src={flagImage} alt="Flag" height="20" /> {t(i18n.language)}
-          </Link>
-          <div className={`dropdown-menu dropdown-menu-right ${dropdown.flag ? "show" : ""}`}>
-            <Link to="#" className="dropdown-item" onClick={() => changeLanguage("en")}>
-              <img src={lnEnglish} alt="Flag" height="16" /> English
-            </Link>
-            <Link to="#" className="dropdown-item" onClick={() => changeLanguage("fr")}>
-              <img src={lnFrench} alt="Flag" height="16" /> French
-            </Link>
-            <Link to="#" className="dropdown-item" onClick={() => changeLanguage("es")}>
-              <img src={lnSpanish} alt="Flag" height="16" /> Spanish
-            </Link>
-            <Link to="#" className="dropdown-item" onClick={() => changeLanguage("de")}>
-              <img src={lnGerman} alt="Flag" height="16" /> German
-            </Link>
-          </div>
-        </li>
-        {/* /Flag */}
-        {/* Notifications */}
+          </Button>
+          {unreadMessages  && (
+              <span style={{
+                position: 'absolute',
+                top: '0px',
+                right: '0px',
+                backgroundColor: 'red',
+                borderRadius: '50%',
+                width: '10px',
+                height: '10px',
+                marginRight: '185px',
+              }}></span>
+            )}
+          <WhatsAppChatModal 
+          visible={isModalVisible} 
+          onClose={handleClose} 
+          onUnreadMessagesUpdate={handleUnreadMessagesUpdate}
+          />
+        </div>
         <li className="nav-item dropdown">
           <Link
             to="#"
@@ -183,145 +170,57 @@ const Header = () => {
             <i>
               <FaRegBell />
             </i>{" "}
-            <span className="badge badge-pill">3</span>
+            <span className="badge badge-pill">{unreadNotifications.length}</span>
           </Link>
           <div className={`dropdown-menu dropdown-menu-end notifications ${dropdown.notification ? "show" : ""}`}>
             <div className="topnav-dropdown-header">
               <span className="notification-title">Notifications</span>
-              <Link to="#" onClick={() => setDropdown((prev) => ({ ...prev, notification: false }))} className="clear-noti">
-                Clear All
-              </Link>
             </div>
             <div className="noti-content">
               <ul className="notification-list">
-                {data.map((val, index) => (
-                  <li className="notification-message" key={index}>
-                    <Link to="/app/administrator/activities">
-                      <div className="media d-flex">
-                        <span className="avatar flex-shrink-0">
-                          <img alt="" src={val.image} />
-                        </span>
-                        <div className="media-body">
-                          <p className="noti-details">
-                            <span className="noti-title">{val.name}</span> {val.contents}{" "}
-                            <span className="noti-title">{val.contents_2}</span>
-                          </p>
-                          <p className="noti-time">
-                            <span className="notification-time">{val.time}</span>
-                          </p>
+                {/* Combine and sort notifications */}
+                {[...unreadNotifications, ...notifications].map((notification) => {
+                  const { activity_id, message, link, created_at } = formatNotification(notification);
+                  return (
+                    <li className={`notification-message ${notification.pivot.notif_read === 1 ? "read" : "unread"}`} key={activity_id}>
+                      <Link to="#" onClick={() => handleNotificationClick(activity_id, link)}>
+                        <div className="media d-flex">
+                          <div className="media-body">
+                            <p className="noti-details">{message}</p>
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
-            </div>
-            <div className="topnav-dropdown-footer">
-              <Link to="/app/administrator/activities">View all Notifications</Link>
             </div>
           </div>
         </li>
-        {/* /Notifications */}
-        {/* Message Notifications */}
-        <li className={`nav-item dropdown ${dropdown.isOpen ? "show" : ""}`}>
-          <Link
-            to="#"
-            className="dropdown-toggle nav-link"
-            data-bs-toggle="dropdown"
-            onClick={() => toggleDropdown("isOpen")}
-          >
-            <i>
-              <FaRegComment />
-            </i>{" "}
-            <span className="badge badge-pill">8</span>
-          </Link>
-          <div className={`dropdown-menu dropdown-menu-end notifications ${dropdown.isOpen ? "show" : ""}`}>
-            <div className="topnav-dropdown-header">
-              <span className="notification-title">Messages</span>
-              <Link to="#" className="clear-noti">
-                Clear All
-              </Link>
-            </div>
-            <div className="noti-content">
-              <ul className="notification-list">
-                {datas.map((value, index) => (
-                  <li className="notification-message" key={index}>
-                    <Link to="/conversation/chat">
-                      <div className="list-item">
-                        <div className="list-left">
-                          <span className="avatar">
-                            <img alt="" src={value.image} />
-                          </span>
-                        </div>
-                        <div className="list-body">
-                          <span className="message-author">{value.name}</span>
-                          <span className="message-time">{value.time}</span>
-                          <div className="clearfix" />
-                          <span className="message-content">{value.contents}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="topnav-dropdown-footer">
-              <Link to="/conversation/chat">View all Messages</Link>
-            </div>
-          </div>
-        </li>
-        {/* /Message Notifications */}
         <li className="nav-item dropdown has-arrow main-drop">
           <Link
             to="#"
             className="dropdown-toggle nav-link"
-            data-bs-toggle="dropdown"
             onClick={() => toggleDropdown("profile")}
           >
-            {" "}
-            <span className="user-img me-1">
-              <img src={Avatar_02} alt="img" />
+            {/* <span className="user-img me-1">
+              <img src={Avatar_02} alt="" className="rounded-circle" width={31} />
               <span className="status online" />
+            </span> */}
+            <span>
+              {userInfo.firstName} {userInfo.lastName}
             </span>
-            <span>{firstName.first_name} {firstName.last_name}</span>
           </Link>
           <div className={`dropdown-menu dropdown-menu-end ${dropdown.profile ? "show" : ""}`}>
-            <Link className="dropdown-item" to="/profile">
+            <Link to="/profile" className="dropdown-item">
               My Profile
             </Link>
-            <Link className="dropdown-item" to="/settings/companysetting">
-              Settings
-            </Link>
-            <Link className="dropdown-item" to="/" onClick={handleLogout}>
+            <Link to="#" className="dropdown-item" onClick={handleLogout}>
               Logout
             </Link>
           </div>
         </li>
       </ul>
-      {/* /Header Menu */}
-      {/* Mobile Menu */}
-      <div className="dropdown mobile-user-menu">
-        <Link
-          to="#"
-          className="nav-link dropdown-toggle"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          <i className="fa fa-ellipsis-v" />
-        </Link>
-        <div className="dropdown-menu dropdown-menu-end dropdown-menu-right">
-          <Link className="dropdown-item" to="/profile">
-            My Profile
-          </Link>
-          <Link className="dropdown-item" to="/settings/companysetting">
-            Settings
-          </Link>
-          <Link className="dropdown-item" to="/" onClick={handleLogout}>
-            Logout
-          </Link>
-        </div>
-      </div>
-      {/* /Mobile Menu */}
     </div>
   );
 };

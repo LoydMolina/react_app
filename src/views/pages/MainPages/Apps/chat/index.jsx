@@ -42,7 +42,7 @@ const Chat = () => {
       <div
         className="page-wrapper"
         style={{ minHeight: windowDimension.winHeight }}
-      >
+        >
         <div className="chat-main-row">
           <div className="chat-main-wrapper">
             <ChatSidebar setReceiverId={setReceiverId} />

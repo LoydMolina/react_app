@@ -1,0 +1,5 @@
+.notification-dot {
+    color: red; /* Change to your desired color */
+    font-weight: bold;
+    margin-left: 5px; /* Spacing between user name and dot */
+  }

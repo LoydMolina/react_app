@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../AuthContext';
-import { createTicket, updateTicket } from '../../apiService';
 
 const TicketModelPopup = ({ ticket, onSave }) => {
   const { authState } = useAuth();
@@ -11,7 +10,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [file, setFile] = useState(null);
   const [fileError, setFileError] = useState('');
 
   const initialFormData = {
@@ -22,13 +21,12 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     priority: '',
     cc: '',
     description: '',
-    files: [],
     user_id: userId,
+    attachments: [], 
     to_email: '',
     message_id: '',
     created_at: '',
     updated_at: '',
-    status: 'Active',
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -37,8 +35,16 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     const fetchData = async () => {
       try {
         const [usersResponse, companiesResponse] = await Promise.all([
-          axios.get('https://wd79p.com/backend/public/api/users'),
-          axios.get('https://wd79p.com/backend/public/api/companies'),
+          axios.get('https://wd79p.com/backend/public/api/users', {
+            headers: {
+              Authorization: `Bearer ${authState.token}`,
+            },
+          }),
+          axios.get('https://wd79p.com/backend/public/api/companies', {
+            headers: {
+              Authorization: `Bearer ${authState.token}`,
+            },
+          }),
         ]);
         setUsers(usersResponse.data);
         setCompanies(companiesResponse.data);
@@ -48,7 +54,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     };
 
     fetchData();
-  }, []);
+  }, [authState?.token]);
 
   useEffect(() => {
     if (ticket) {
@@ -67,25 +73,19 @@ const TicketModelPopup = ({ ticket, onSave }) => {
   };
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    const newFiles = [...files];
+    const selectedFile = e.target.files[0];
 
-    selectedFiles.forEach((file) => {
-      if (file.size > 10485760) {
-        setFileError('File size exceeds limit (10MB)');
-      } else {
-        newFiles.push(file);
-      }
-    });
-
-    setFiles(newFiles);
-    setFileError('');
+    if (selectedFile && selectedFile.size > 10485760) {
+      setFileError('File size exceeds limit (10MB)');
+    } else {
+      console.log('File selected:', selectedFile);
+      setFile(selectedFile);
+      setFileError('');
+    }
   };
 
-  const removeFile = (index) => {
-    const newFiles = [...files];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
+  const removeFile = () => {
+    setFile(null);
     setFileError('');
   };
 
@@ -97,22 +97,31 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     if (!formData.priority) newErrors.priority = 'Priority is required';
     if (!formData.cc) {
       newErrors.cc = 'Cc is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.cc)) {
-      newErrors.cc = 'Email is invalid';
-    }
+    } else {
+      if (/[^,\s\w@.-]/.test(formData.cc)) {
+        newErrors.cc = 'Use commas to separate multiple email addresses';
+      } else {
+        const emails = formData.cc.split(',').map(email => email.trim());
+        const invalidEmails = emails.filter(email => !/\S+@\S+\.\S+/.test(email));
+    
+        if (invalidEmails.length > 0) {
+          newErrors.cc = 'One or more email addresses are invalid';
+        }
+      }
+    }    
     if (!formData.to_email) {
       newErrors.to_email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.to_email)) {
       newErrors.to_email = 'Email is invalid';
     }
     if (!formData.description) newErrors.description = 'Description is required';
-    if (!formData.status) newErrors.status = 'Status is required';
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -120,47 +129,44 @@ const TicketModelPopup = ({ ticket, onSave }) => {
       return;
     }
 
+    const formDataToSend = new FormData();
+    formDataToSend.append('subject', formData.subject);
+    formDataToSend.append('company_id', formData.company_id);
+    formDataToSend.append('assign_staff', formData.assign_staff);
+    formDataToSend.append('priority', formData.priority);
+    formDataToSend.append('cc', formData.cc);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('user_id', formData.user_id);
+    formDataToSend.append('to_email', formData.to_email);
+    formDataToSend.append('status', formData.status);
+
+    
+    if (file) {
+      formDataToSend.append('attachments[0]', file);
+    }
+
     try {
-      const formDataToSend = new FormData();
-
-      formDataToSend.append('subject', formData.subject);
-      formDataToSend.append('company_id', formData.company_id);
-      formDataToSend.append('assign_staff', formData.assign_staff);
-      formDataToSend.append('priority', formData.priority);
-      formDataToSend.append('cc', formData.cc);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('user_id', userId);
-      formDataToSend.append('to_email', formData.to_email);
-      formDataToSend.append('status', formData.status);
-
-      files.forEach((file, index) => {
-        formDataToSend.append(`files[${index}]`, file);
-      });
-
-      console.log('Files:', files);
-      console.log('FormData:', ...formDataToSend);
-
+      let response;
       if (formData.id) {
-        await updateTicket(formData.id, formDataToSend);
+        response = await axios.put(
+          `https://wd79p.com/backend/public/api/tickets/${formData.id}`,
+          formDataToSend, authState.user_id
+        );
       } else {
-        await createTicket(formDataToSend);
+        response = await axios.post(
+          'https://wd79p.com/backend/public/api/tickets',
+          formDataToSend
+        );
+        setFormData(initialFormData);
+        const closeModalButton = document.querySelector('#add_ticket .btn-close');
+        if (closeModalButton) {
+          closeModalButton.click();
+        }
       }
-
       onSave();
-      setFormData(initialFormData);
-      setFiles([]);
-
-      const closeModalButton = document.querySelector('#add_ticket .btn-close');
-      if (closeModalButton) {
-        closeModalButton.click();
-      }
     } catch (error) {
       console.error('Error saving ticket:', error.response ? error.response.data : error.message);
-      if (error.response && error.response.data && error.response.data.errors) {
-        setErrors({ submit: error.response.data.errors });
-      } else {
-        setErrors({ submit: { general: 'An error occurred. Please try again later.' } });
-      }
+      alert('Failed to save ticket');
     } finally {
       setLoading(false);
     }
@@ -170,7 +176,7 @@ const TicketModelPopup = ({ ticket, onSave }) => {
     const closeModalHandler = () => {
       setFormData(initialFormData);
       setErrors({});
-      setFiles([]);
+      setFile(null);
     };
 
     const modalElement = document.getElementById('add_ticket');
@@ -203,14 +209,14 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                 {errors.subject && <div className="text-danger">{errors.subject}</div>}
               </div>
               <div className="form-group">
-                <label>Client</label>
+                <label>Company</label>
                 <select
                   className={`form-control ${errors.company_id ? 'is-invalid' : ''}`}
                   name="company_id"
                   value={formData.company_id}
                   onChange={handleChange}
                 >
-                  <option value="">--Select Client--</option>
+                  <option value="">--Select Company--</option>
                   {companies.map((company) => (
                     <option key={company.id} value={company.id}>
                       {company.name}
@@ -270,26 +276,8 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
                   <option value="High">High</option>
-                  <option value="Emergency">Emergency</option>
                 </select>
                 {errors.priority && <div className="text-danger">{errors.priority}</div>}
-              </div>
-              <div className="form-group">
-                <label>Status</label>
-                <select
-                  className={`form-control ${errors.status ? 'is-invalid' : ''}`}
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                >
-                  <option value="">--Select Status--</option>
-                  <option value="New">New</option>
-                  <option value="Open">Open</option>
-                  <option value="On Hold">On Hold</option>
-                  <option value="Closed">Closed</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-                {errors.status && <div className="text-danger">{errors.status}</div>}
               </div>
               <div className="form-group">
                 <label>Description</label>
@@ -302,34 +290,31 @@ const TicketModelPopup = ({ ticket, onSave }) => {
                 {errors.description && <div className="text-danger">{errors.description}</div>}
               </div>
               <div className="form-group">
-                <label>Attach Files</label>
+                <label>Attach File</label>
                 <input
                   type="file"
-                  className="form-control"
-                  name="files"
+                  className={`form-control ${fileError ? 'is-invalid' : ''}`}
+                  name="attachments"
                   onChange={handleFileChange}
-                  multiple
                 />
                 {fileError && <div className="text-danger">{fileError}</div>}
-                <ul>
-                  {files.map((file, index) => (
-                    <li key={index}>
-                      {file.name}
-                      <button type="button" className="btn btn-sm btn-danger" onClick={() => removeFile(index)}>
-                          <i className="bi bi-x">Remove</i>
-                        </button>
-                    </li>
-                  ))}
-                </ul>
+                {file && (
+                  <div>
+                    <span>{file.name}</span>
+                    <button type="button" className="btn btn-danger btn-sm" onClick={removeFile}>
+                      Remove File
+                    </button>
+                  </div>
+                )}
               </div>
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Saving...' : formData.id ? 'Update Ticket' : 'Add Ticket'}
-              </button>
-              {errors.submit && (
-                <div className="text-danger mt-3">
-                  {errors.submit.general || Object.values(errors.submit).join(', ')}
-                </div>
-              )}
+              <div className="modal-footer">
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? 'Adding...' : 'Add'}
+                </button>
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>

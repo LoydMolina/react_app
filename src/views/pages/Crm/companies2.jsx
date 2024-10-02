@@ -7,8 +7,7 @@ import CompaniesHeader from './CompaniesHeader';
 import FilterFields from './FilterFields';
 import CompaniesTable from './CompaniesTable';
 import CompanyDetails from './CompanyDetails';
-import { getCompanies, deleteCompany, getCompany } from '../../../apiService';
-import { useAuth } from "../../../AuthContext";
+import { getCompanies, deleteCompany } from '../../../apiService';
 
 const Companies = () => {
   const [companies, setCompanies] = useState([]);
@@ -20,24 +19,18 @@ const Companies = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewingDetails, setIsViewingDetails] = useState(false); // State for viewing company details
   const [viewType, setViewType] = useState('table');
-  const { authState } = useAuth();
 
   useEffect(() => {
     const fetchCompanies = async () => {
-      try {
-        const data = await getCompanies(authState.token); 
-        setCompanies(data);
-        setFilteredCompanies(data);
-      } catch (error) {
-        console.error('Failed to fetch companies:', error);
-      }
+      const data = await getCompanies();
+      setCompanies(data);
+      setFilteredCompanies(data);
     };
 
-    if (authState?.token) {
-      fetchCompanies(); 
-    }
-  }, [authState?.token]);
+    fetchCompanies();
+  }, []);
 
   const handleSearch = () => {
     const filtered = companies.filter(company => {
@@ -50,23 +43,21 @@ const Companies = () => {
     setFilteredCompanies(filtered);
   };
 
-  const handleEdit = async (company) => {
-    const companyWithAddresses = await getCompany(company.id, authState.token);
-    if(companyWithAddresses && authState?.token) {
-    setSelectedCompany(company); 
-    setIsModalOpen(true);
-    }
+  const handleEdit = (company) => {
+    setSelectedCompany(company); // Set the selected company for editing
+    setIsModalOpen(true); // Open the modal for editing
+    setIsViewingDetails(false); // Ensure details view is not active
   };
 
   const handleAddCompany = () => {
-    setSelectedCompany(null);
-    setIsModalOpen(true);
+    setSelectedCompany(null); // For adding, no company is selected
+    setIsModalOpen(true); // Open the modal for adding
   };
 
   const handleDelete = async () => {
     if (selectedCompany) {
       try {
-        await deleteCompany(selectedCompany.id, authState.token); 
+        await deleteCompany(selectedCompany.id);
         const updatedCompanies = companies.filter(company => company.id !== selectedCompany.id);
         setCompanies(updatedCompanies);
         setFilteredCompanies(updatedCompanies);
@@ -79,42 +70,32 @@ const Companies = () => {
   };
 
   const handleSave = async () => {
-    try {
-      const token = authState.token
-      const data = await getCompanies(token);
-      setCompanies(data);
-      setFilteredCompanies(data);
-      setIsModalOpen(false);
-      setSelectedCompany(null);
-    } catch (error) {
-      console.error("Failed to save company:", error);
-    } finally {
-    }
+    const data = await getCompanies(); // Fetch the updated list of companies
+    setCompanies(data); // Update the state with new companies list
+    setFilteredCompanies(data);
+    setIsModalOpen(false); // Close the modal after save
+    setSelectedCompany(null); // Reset selected company
   };
-  const handleSelectCompany = async (company) => {
-    try {
-      const companyWithDetails = await getCompany(company.id, authState.token);
-  
-      if (companyWithDetails && authState?.token) {
-        setSelectedCompany(companyWithDetails);  
-      }
-    } catch (error) {
-      console.error('Error fetching company details:', error);
-    }
+
+  const handleSelectCompany = (company) => {
+    setSelectedCompany(company);
+    setIsViewingDetails(true); // Trigger showing the details view
+    setIsModalOpen(false); // Ensure modal is not open
   };
 
   const columns = [
     {
-      title: "Vendor Name",
+      title: "Company Name",
       dataIndex: "name",
       render: (text, record) => (
         <div className="d-flex">
           <div>
             <h2 className="table-avatar d-flex align-items-center table-padding">
-              {/* <Link to="#" className="company-img" onClick={() => handleSelectCompany(record)}>
+              {/* Ensure the onClick triggers the company details view */}
+              <Link to="#" className="company-img" onClick={() => handleSelectCompany(record)}>
                 <img src={record.profile_image || 'default-image-path'} alt="UserImage" />
-              </Link> */}
-              <Link className="profile-split" onClick={() => handleSelectCompany(record)}>
+              </Link>
+              <Link to="#" className="profile-split" onClick={() => handleSelectCompany(record)}>
                 {record.name}
               </Link>
             </h2>
@@ -124,19 +105,9 @@ const Companies = () => {
       sorter: (a, b) => a.name.length - b.name.length,
     },
     {
-      title: "Vendor Email",
+      title: "Company Email",
       dataIndex: "email",
       sorter: (a, b) => a.email.length - b.email.length,
-    },
-    {
-      title: "Mobile Number",
-      dataIndex: "phone_number",
-      sorter: (a, b) => a.phone_number.length - b.phone_number.length,
-    },
-    {
-      title: "Telephone Number",
-      dataIndex: "telephone_number",
-      sorter: (a, b) => a.telephone_number.length - b.telephone_number.length,
     },
     {
       title: "Status",
@@ -167,7 +138,7 @@ const Companies = () => {
               to="#"
               data-bs-toggle="modal"
               data-bs-target="#add_company"
-              onClick={() => handleEdit(record)}
+              onClick={() => handleEdit(record)} // Trigger edit modal
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </Link>
@@ -186,10 +157,6 @@ const Companies = () => {
       ),
     },
   ];
-
-  if (selectedCompany && !isDeleteModalOpen && !isModalOpen) {
-    return <CompanyDetails company={selectedCompany} onBack={() => setSelectedCompany(null)} />;
-  }
 
   return (
     <div className="page-wrapper">
@@ -223,26 +190,28 @@ const Companies = () => {
           </div>
         </div>
       </div>
+      
+      {/* Modal for Adding/Editing */}
       {isModalOpen && (
         <CompaniesModal
-          company={selectedCompany}
-          onSave={handleSave}
+          company={selectedCompany} // Pass selected company for editing
+          onSave={handleSave} // Trigger save after editing
+          onClose={() => setIsModalOpen(false)} // Close modal
         />
       )}
+
+      {/* Company Details View */}
+      {isViewingDetails && selectedCompany && (
+        <CompanyDetails company={selectedCompany} onBack={() => setIsViewingDetails(false)} />
+      )}
+
+      {/* Delete Modal */}
       {isDeleteModalOpen && (
         <div className="modal fade show" style={{ display: 'block' }}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Confirm Deletion</h5>
-                {/* <button
-                  type="button"
-                  className="close"
-                  data-dismiss="modal"
-                  onClick={() => setIsDeleteModalOpen(false)}
-                >
-                  <span>&times;</span>
-                </button> */}
               </div>
               <div className="modal-body">
                 <p>Are you sure you want to delete {selectedCompany?.name}?</p>
@@ -267,7 +236,6 @@ const Companies = () => {
           </div>
         </div>
       )}
-      <AddNotes />
     </div>
   );
 };

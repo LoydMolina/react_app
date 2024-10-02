@@ -358,7 +358,7 @@
 @include respond-above(custom992) {
     .mini-sidebar{
         .sidebar {
-            width: 60px;
+            width: 0px;
             .menu-title {
                 visibility: hidden;
                 white-space: nowrap;

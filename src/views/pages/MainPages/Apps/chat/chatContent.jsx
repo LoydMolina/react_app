@@ -1,40 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../../AuthContext';
+import { Empty, Spin, Tooltip } from 'antd';
+import PropTypes from 'prop-types';
+import moment from 'moment';
 
-const ChatMessage = ({ message, senderId }) => {
+const ChatMessage = ({ message, senderId, receiverId }) => {
+  
+  const isSender = message.sender_id === senderId || !message.sender_id || message.sender_id !== receiverId || message.sender_id===null;
+  const chatPositionClass = isSender ? 'chat-right' : 'chat-left';
+
   return (
-    <div className={`chat ${message.sender_id === senderId ? 'chat-right' : 'chat-left'}`}>
+    <div className={`chat ${chatPositionClass}`}>
       <div className="chat-body">
         <div className="chat-bubble">
           <div className="chat-content">
-            <p>{message.message_text}</p>
-            <span className="chat-time">{message.created_at}</span>
-          </div>
-          <div className="chat-action-btns">
-            <ul>
-              <li>
-                <Link to="#" className="share-msg" title="Share">
-                  <i className="fa fa-share-alt" />
-                </Link>
-              </li>
-              <li>
-                <Link to="#" className="edit-msg">
-                  <i className="fa fa-pencil" />
-                </Link>
-              </li>
-              <li>
-                <Link to="#" className="del-msg">
-                  <i className="fa fa-trash" />
-                </Link>
-              </li>
-            </ul>
+            <Tooltip title={moment(message.created_at).format('LLLL')} placement="top">
+              <p>{message.message_text || 'No message content available'}</p>
+            </Tooltip>
+            <span className="chat-time">{moment(message.created_at).fromNow()}</span>
+  
+            {message.file && (
+              <div className="chat-file">
+             {message.type.startsWith('image/') ? (
+                <img
+                  src={`https://wd79p.com/backend/public/storage/chatdir/${message.file}`}
+                  alt="Image preview"
+                  style={{ maxWidth: '200px', maxHeight: '200px' }}
+                />
+              ) : (
+                <a
+                  href={`https://wd79p.com/backend/public/storage/chatdir/${message.file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {message.file} 
+                </a>
+              )}
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+  
+};
+
+ChatMessage.propTypes = {
+  message: PropTypes.object.isRequired,
+  senderId: PropTypes.number, 
+  receiverId: PropTypes.number.isRequired, 
 };
 
 const ChatContent = ({ receiverId }) => {
@@ -42,16 +58,16 @@ const ChatContent = ({ receiverId }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const senderId = authState.user_id;
+  const messagesEndRef = useRef(null);
+  const senderId = Number(authState?.user_id);
 
   useEffect(() => {
+    if (!receiverId || !senderId) {
+      return;
+    }
+
     const fetchMessages = async () => {
       try {
-        if (!receiverId || !senderId) {
-          console.error('Receiver Id or Sender Id is undefined');
-          return;
-        }
-
         const apiUrl = `https://wd79p.com/backend/public/api/chat-user/${receiverId}/${senderId}`;
         const response = await axios.get(apiUrl);
         const allMessages = response.data.ConvoData;
@@ -65,19 +81,30 @@ const ChatContent = ({ receiverId }) => {
       }
     };
 
-
     fetchMessages();
-
-    
-    const interval = setInterval(fetchMessages, 5000); 
-
-    return () => {
-      clearInterval(interval); 
-    };
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
   }, [senderId, receiverId]);
 
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollDown = messagesEndRef.current.scrollHeight;
+    }
+  }, []);
+
   if (loading) {
-    return <div>Loading messages...</div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', marginTop: '300px', flexDirection: 'column' }}>
+          <img 
+    src="spark.png" 
+    alt="Team Chat" 
+    style={{ width: '300px', marginTop: '20px' }}  
+  />
+  <h3>Connect with your team. Start a conversation.</h3>
+
+</div>
+
+    );
   }
 
   if (error) {
@@ -85,16 +112,22 @@ const ChatContent = ({ receiverId }) => {
   }
 
   return (
-    <div>
-      <div className="chats">
-        {messages.length > 0 ? (
-          messages.map((message) => (
-            <ChatMessage key={message.id} message={message} senderId={senderId} />
-          ))
-        ) : (
-          <div>No messages</div>
-        )}
-      </div>
+    <div className="chats">
+      {messages.length > 0 ? (
+        <>
+          {messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              senderId={senderId} 
+              receiverId={receiverId} 
+            />
+          ))}
+          <div ref={messagesEndRef} />
+        </>
+      ) : (
+        <div><Empty /></div>
+      )}
     </div>
   );
 };

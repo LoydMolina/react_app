@@ -348,7 +348,7 @@
     color: #fff;
 }
 @include respond-above(custom992) {
-    .mini-sidebar{
+    .mini-sidebar {
         .header-left {
             width: 60px;
             @include margin-padding(null, 0 5px);
@@ -360,34 +360,36 @@
                 }
             }
         }
-        .menu-arrow{
+        .menu-arrow {
             display: none !important;
         }
-        .chat-user{
+        .chat-user {
             display: none !important;
         }
-        
-        &.expand-menu{
-            .menu-arrow{
+
+        &.expand-menu {
+            .menu-arrow {
                 display: block !important;
             }
-            .chat-user{
+            .chat-user {
                 display: block !important;
             }
-            .badge{
+            .badge {
                 display: inline-block !important;
             }
         }
-        .noti-dot{
-            &:before{
+        .noti-dot {
+            &:before {
                 display: none;
             }
         }
     }
 }
+
 .collapse-logo {
     display: none !important;
 }
+
 .mini-sidebar {
     .logo {
         display: none !important;
